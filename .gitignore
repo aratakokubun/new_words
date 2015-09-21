@@ -1,0 +1,16 @@
+.classpath
+.factorypath
+.project
+.settings
+assets
+bin
+factory
+gen
+*.log
+*.png
+libs
+lint.xml
+*.txt
+*.cfg
+*.properties
+res
