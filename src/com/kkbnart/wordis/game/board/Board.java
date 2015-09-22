@@ -5,9 +5,9 @@ import java.util.Set;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
-import android.util.Log;
 import android.util.SparseArray;
 
+import com.kkbnart.wordis.game.exception.InvalidParameterException;
 import com.kkbnart.wordis.game.object.Block;
 import com.kkbnart.wordis.game.object.BlockSet;
 
@@ -41,10 +41,11 @@ public class Board {
 	 * @param collisionY		Upper line of the collision of the board
 	 * @param collisionRow		Row number of the collision of the board
 	 * @param collisionColumn	Column number of the collision of the board
+	 * @throws InvalidParameterException	Invalid parameters are specified
 	 */
 	public Board(final int x, final int y, final int width, final int height,
 			final int row, final int column, final int collisionX, final int collisionY,
-			final int collisionRow, final int collisionColumn) {
+			final int collisionRow, final int collisionColumn) throws InvalidParameterException {
 		this.updateBoardArea(x, y, width, height);
 		this.updateBoardSize(row, column, collisionX, collisionY, collisionRow, collisionColumn);
 	}
@@ -57,7 +58,10 @@ public class Board {
 	 * @param width 	Width of the board
 	 * @param height	Height of the board
 	 */
-	public void updateBoardArea(final int x, final int y, final int width, final int height) {
+	public void updateBoardArea(final int x, final int y, final int width, final int height) throws InvalidParameterException {
+		if (x<0 || y<0 || width<=0 || height<=0) {
+			throw new InvalidParameterException();
+		}
 		this.x = x;
 		this.y = y;
 		this.width = width;
@@ -77,7 +81,10 @@ public class Board {
 	 */
 	public void updateBoardSize(final int row, final int column,
 			final int collisionX, final int collisionY,
-			final int collisionRow, final int collisionColumn) {
+			final int collisionRow, final int collisionColumn) throws InvalidParameterException {
+		if (row<=0 || column<=0 || collisionRow<=collisionX || collisionColumn<=collisionY) {
+			throw new InvalidParameterException();
+		}
 		this.row =  row;
 		this.column = column;
 		this.collisionX = collisionX;
@@ -102,6 +109,14 @@ public class Board {
 	 */
 	public RectF getCollisionRect() {
 		return new RectF(collisionX, collisionY, collisionX+collisionColumn, collisionY+collisionRow);
+	}
+	
+	public int getX() {
+		return x;
+	}
+	
+	public int getY() {
+		return y;
 	}
 	
 	/**
@@ -197,6 +212,9 @@ public class Board {
 	 * @return Matrix form of the board blocks
 	 */
 	public Block[][] getMatrixedBlocks() {
+		// TODO
+		// row = 0, col = 0などの状況でエラーが発生する可能性がある
+		
 		// Create matrix of board row*column size
 		Block[][] matrix = new Block[collisionRow][collisionColumn];
 		

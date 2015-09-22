@@ -26,6 +26,10 @@ public class OperatedBlocks extends BlockSet {
 	 */
 	public OperatedBlocks(final float rootX, final float rootY) {
 		super();
+		setRoot(rootX, rootY);
+	}
+	
+	public void setRoot(final float rootX, final float rootY) {
 		this.rootX = rootX;
 		this.rootY = rootY;
 	}
@@ -41,7 +45,7 @@ public class OperatedBlocks extends BlockSet {
 	}
 	
 	/**
-	 * Automatical update of the position <br>
+	 * Update block position at each frame automatically. <br>
 	 */
 	public synchronized void autoUpdate() {
 		update(FreeFall.getInstance().getXPerFrame(), FreeFall.getInstance().getYPerFrame());
@@ -54,14 +58,25 @@ public class OperatedBlocks extends BlockSet {
 	 * @param dx 	Amount of move x	
 	 * @param dy	Amount of move y
 	 */
-	public synchronized void operate(final Board board, final int dx, final int dy) {
-		BlockSet test = testUpdate(dx, 0);
-		boolean checkDx = Collision.isCollided(board, test);
-		test = testUpdate(0, dy);
-		boolean checkDy = Collision.isCollided(board, test);
-		test = null;
+	public synchronized void operate(final Board board, final float dx, final float dy) {
+		// Try for (dx, dy) move
+		BlockSet test = testUpdate(dx, dy);
+		if (!Collision.isCollided(board, test)) {
+			update(dx, dy);
+			return;
+		}
+		// Try for (dx, 0) move
+		test = testUpdate(dx, 0);
+		if (!Collision.isCollided(board, test)) {
+			update(dx, 0);
+			return;
+		}
 		
-		update(checkDx ? 0 : dx, checkDy ? 0 : dy);
+		// Try for (0, dy)
+		test = testUpdate(0, dy);
+		if (!Collision.isCollided(board, test)) {
+			update(0, dy);
+		}
 	}
 
 	/**

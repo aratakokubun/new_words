@@ -8,6 +8,7 @@ import com.kkbnart.wordis.game.board.Board;
 import com.kkbnart.wordis.game.board.NextBlocks;
 import com.kkbnart.wordis.game.board.OperatedBlocks;
 import com.kkbnart.wordis.game.exception.BlockCreateException;
+import com.kkbnart.wordis.game.exception.InvalidParameterException;
 import com.kkbnart.wordis.game.object.Block;
 import com.kkbnart.wordis.game.object.BlockColorSet;
 import com.kkbnart.wordis.game.object.BlockIdFactory;
@@ -18,50 +19,21 @@ import com.kkbnart.wordis.game.object.PatternDefinition;
 import com.kkbnart.wordis.game.rule.DeleteBlockLine;
 
 public class GameManager implements Runnable {
-	// private static final String TAG = GameManager.class.getSimpleName();
-	
 	// Game board
-	private Board board;
+	private Board board = null;
 	// Operated block
-	private OperatedBlocks operated;
+	private OperatedBlocks operated = null;
 	// Next block
-	private NextBlocks next;
+	private NextBlocks next = null;
 	// GameSurfaceView
 	private GameSurfaceView gsv = null;
 	// Factory to create new set of block
-	private BlockSetFactory blockSetFactory;
+	private BlockSetFactory blockSetFactory = null;
 	
 	// Sleep time [ms]
 	private static final long SLEEP = 50;
 	
-	/**
-	 * Constructor with specifying game settings. <br>
-	 * 
-	 * @param parent Activity class
-	 */
-	public GameManager(final Activity parent, final GameSurfaceView gsv) {
-		// FIXME
-		// Test
-		board = new Board(/* x= */10, /* y= */10, /* w= */200, /* h= */400,
-				/* row= */12, /* col= */6, /* collisionX= */0, /* collisionY= */-3,
-				/* collisionRow= */ 15, /* collisionCol= */6);
-		operated = new OperatedBlocks(2, -2);
-		BlockColorSet bcs = new BlockColorSet(parent.getResources());
-		CharacterSet cs = new CharacterSet(parent);
-		blockSetFactory = new BlockSetFactory(bcs, cs);
-		//
-		{
-			blockSetFactory.registerBlockPatterns(PatternDefinition.BAR, 1.0);
-			blockSetFactory.registerBlockPatterns(PatternDefinition.L, 0.5);
-			blockSetFactory.registerBlockPatterns(PatternDefinition.INV_L, 0.5);
-			blockSetFactory.registerBlockPatterns(PatternDefinition.Z, 0.5);
-			blockSetFactory.registerBlockPatterns(PatternDefinition.INV_Z, 0.5);
-			blockSetFactory.registerBlockPatterns(PatternDefinition.BUMP, 1.0);
-			blockSetFactory.registerCharacterPattern("TEST");
-		}
-		//
-		next = new NextBlocks(9, 1, 0, 4, blockSetFactory);
-		
+	public void setGameSurfaceView(final GameSurfaceView gsv) {
 		this.gsv = gsv;
 	}
 	
@@ -71,12 +43,76 @@ public class GameManager implements Runnable {
 	 * @throws BlockCreateException Can not create blocks
 	 */
 	public void startGame() throws BlockCreateException {
-		// FIXME
-		// Test
-		next.initializeBlockSet(2);
+		// Set next prepared to start
+		next.setFactory(blockSetFactory);
+		final GameTypeDefinition gtd = GameTypeDefinition.getInstance();
+		next.initializeBlockSet(gtd.nextSize);
+
 		operated.setBlocks(next.releaseNextBlocks());
 		Thread gameThread = new Thread(this);
 		gameThread.start();
+	}
+	
+	/**
+	 * Change view size. <br>
+	 * 
+	 * @param activity	Game Activity
+	 * @param width		View width
+	 * @param height	View height
+	 * @throws BlockCreateException			Can not create new set of blocks
+	 * @throws InvalidParameterException 	Invalid parameters are specified
+	 */
+	public void surfaceSizeChanged(final Activity activity, final int width, final int height) throws BlockCreateException, InvalidParameterException {
+		final GameTypeDefinition gtd = GameTypeDefinition.getInstance();
+		
+		// Change board size depends on view size
+		final int x = (int)(gtd.boardXRate * width);
+		final int y = (int)(gtd.boardYRate * height);
+		final int w = (int)(gtd.boardWRate * width);
+		final int h = (int)(gtd.boardHRate * height);
+		if (board == null) {
+			board = new Board(x, y, w, h, gtd.boardRow, gtd.boardCol,
+					gtd.boardCollisionX, gtd.boardCollisionY, gtd.boardCollisionRow, gtd.boardCollisionCol);
+		} else {
+			board.updateBoardArea(x, y, w, h);
+			board.updateBoardSize(gtd.boardRow, gtd.boardCol,
+					gtd.boardCollisionX, gtd.boardCollisionY, gtd.boardCollisionRow, gtd.boardCollisionCol);
+		}
+		
+		// Create operated block set
+		if (operated == null) {
+			operated = new OperatedBlocks(gtd.operatedX, gtd.operatedY);
+		} else {
+			operated.setRoot(gtd.operatedX, gtd.operatedY);
+		}
+		
+		// Create next block set
+		if (next == null) {
+			next = new NextBlocks(gtd.nextX, gtd.nextY, gtd.nextMarginX, gtd.nextMarginY);
+		} else {
+			next.setCoordinate(gtd.nextX, gtd.nextY, gtd.nextMarginX, gtd.nextMarginY);
+		}
+	}
+	
+	/**
+	 * Create block set factory depends on {@code word}. <br>
+	 * 
+	 * @param activity	Activity to get resources
+	 * @throws BlockCreateException Can not create new block
+	 */
+	public void createBlockSetFactory(final Activity activity, final String word) throws BlockCreateException {
+		if (blockSetFactory == null) {
+			BlockColorSet bcs = new BlockColorSet(activity.getResources());
+			CharacterSet cs = new CharacterSet(activity.getResources());
+			blockSetFactory = new BlockSetFactory(bcs, cs);
+			blockSetFactory.registerBlockPatterns(PatternDefinition.BAR, 1.0);
+			blockSetFactory.registerBlockPatterns(PatternDefinition.L, 0.5);
+			blockSetFactory.registerBlockPatterns(PatternDefinition.INV_L, 0.5);
+			blockSetFactory.registerBlockPatterns(PatternDefinition.Z, 0.5);
+			blockSetFactory.registerBlockPatterns(PatternDefinition.INV_Z, 0.5);
+			blockSetFactory.registerBlockPatterns(PatternDefinition.BUMP, 1.0);
+		}
+		blockSetFactory.registerCharacterPattern(word);
 	}
 	
 	@Override
@@ -97,25 +133,39 @@ public class GameManager implements Runnable {
 			}
 			// Update previous time
 			prevTime = System.currentTimeMillis();
-			
-			try {
-				updateBlocks();
-			} catch (BlockCreateException e) {
-				// TODO
-				// Handle exception with showing some message and terminate game.
+
+			// Do update and draw if all class variables are initialized
+			if (!checkIsNull()) {
+				try {
+					updateBlocks();
+				} catch (BlockCreateException e) {
+					// TODO
+					// Handle exception with showing some message and terminate game.
+				}
+				updateView();
 			}
-			updateView();
 		}
 		
 		// TODO
 		// End of the game
 	}
 	
+	/**
+	 * Judge if continue game. <br>
+	 * 
+	 * @return true  : continue game <br>
+	 * 		   false : terminate game <br>
+	 */
 	private boolean continueGame() {
 		// FIXME
 		return true;
 	}
 	
+	/**
+	 * Update state of blocks in board. <br>
+	 * 
+	 * @throws BlockCreateException Can not create new block set
+	 */
 	private void updateBlocks() throws BlockCreateException {
 		// If contacted to walls or other blocks, stable the operated blocks and set next
 		if (Collision.isContacted(board, operated)) {
@@ -132,24 +182,40 @@ public class GameManager implements Runnable {
 		}
 	}
 	
+	/**
+	 * Delete blocks in board. <br>
+	 */
 	private void deleteBlocks() {
 		final Block[][] matrix = board.getMatrixedBlocks();
 		
 		final String word = blockSetFactory.getWord();
 		final int order = 0;
 		Set<Integer> deletedIds = DeleteBlockLine.deleteWordLine(matrix, word, order);
-		// Delete ids of blocks
+		// Delete specified blocks from board
 		board.deleteBlocks(deletedIds);
-		// Release ids of them in block id factory
+		// Release ids of deleted blocks from id factory
 		BlockIdFactory.getInstance().dissociateIds(deletedIds);
 	}
 	
+	/**
+	 * Update view graphics. <br>
+	 */
 	private void updateView() {
 		gsv.draw(board, operated, next);
 	}
 	
-	/* Block operation */
-	public void moveBlock(final int dx, final int dy) {
+	/**
+	 * Check if class members are initialized. <br>
+	 * 
+	 * @return true : Some members are null. <br>
+	 * 		   false: All members are not null. <br>
+	 */
+	private boolean checkIsNull() {
+		return board == null || operated == null || next == null || gsv == null || blockSetFactory == null;
+	}
+
+	// Block operations
+	public void moveBlock(final float dx, final float dy) {
 		operated.operate(board, dx, dy);
 	}
 	public void rotateBlock(final boolean clockWise) {
