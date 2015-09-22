@@ -14,7 +14,6 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import com.kkbnart.wordis.R.id;
@@ -78,16 +77,30 @@ public final class Game_
     @Override
     public void onViewChanged(HasViews hasViews) {
         gsv = ((GameSurfaceView) hasViews.findViewById(id.mySurfaceView));
-        left = ((Button) hasViews.findViewById(id.leftButton));
         {
-            View view = hasViews.findViewById(id.downButton);
+            View view = hasViews.findViewById(id.clockwiseButton);
             if (view!= null) {
                 view.setOnClickListener(new OnClickListener() {
 
 
                     @Override
                     public void onClick(View view) {
-                        Game_.this.downButtonClick(view);
+                        Game_.this.clockwiseButtonClick(view);
+                    }
+
+                }
+                );
+            }
+        }
+        {
+            View view = hasViews.findViewById(id.upperButton);
+            if (view!= null) {
+                view.setOnClickListener(new OnClickListener() {
+
+
+                    @Override
+                    public void onClick(View view) {
+                        Game_.this.upperButtonClick(view);
                     }
 
                 }
@@ -110,41 +123,29 @@ public final class Game_
             }
         }
         {
-            View view = hasViews.findViewById(id.clockwiseButton);
+            View view = hasViews.findViewById(id.downButton);
             if (view!= null) {
                 view.setOnClickListener(new OnClickListener() {
 
 
                     @Override
                     public void onClick(View view) {
-                        Game_.this.clockwiseButtonClick(view);
+                        Game_.this.downButtonClick(view);
                     }
 
                 }
                 );
             }
         }
-        if (left!= null) {
-            left.setOnClickListener(new OnClickListener() {
-
-
-                @Override
-                public void onClick(View view) {
-                    Game_.this.leftButtonClick(view);
-                }
-
-            }
-            );
-        }
         {
-            View view = hasViews.findViewById(id.upperButton);
+            View view = hasViews.findViewById(id.leftButton);
             if (view!= null) {
                 view.setOnClickListener(new OnClickListener() {
 
 
                     @Override
                     public void onClick(View view) {
-                        Game_.this.upperButtonClick(view);
+                        Game_.this.leftButtonClick(view);
                     }
 
                 }

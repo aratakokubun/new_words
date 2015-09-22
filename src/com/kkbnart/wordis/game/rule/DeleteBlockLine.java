@@ -5,8 +5,6 @@ import java.util.Set;
 
 import com.kkbnart.wordis.game.object.Block;
 
-import static com.kkbnart.wordis.game.object.CharacterDefinition.*;
-
 public class DeleteBlockLine {
 	// Substitute string for a blank cell
 	private static final String NULL_OPTION = ",";
@@ -24,12 +22,13 @@ public class DeleteBlockLine {
 	public static Set<Integer> deleteWordLine(final Block[][] matrix, final String word, final int order) {
 		Set<Integer> deletedIds = new HashSet<Integer>();
 
-		// deletedIds.addAll(deleteVerticalWordLine(matrix, word, order));
-		// deletedIds.addAll(deleteHorizontalWordLine(matrix, word, order));
+		// TODO
+		// count how many times each id is selected with different direction. (count 1 for multiple times in same direction)
 		
+		deletedIds.addAll(deleteVerticalWordLine(matrix, word, order));
+		deletedIds.addAll(deleteHorizontalWordLine(matrix, word, order));
 		deletedIds.addAll(deleteLeftDiagonalWordLine(matrix, word, order));
-		
-		// deletedIds.addAll(deleteRightDiagonalWordLine(matrix, word, order));
+		deletedIds.addAll(deleteRightDiagonalWordLine(matrix, word, order));
 		
 		return deletedIds;
 	}
@@ -161,7 +160,7 @@ public class DeleteBlockLine {
 				for (int index : inverseIndices) {
 					for (int i = 0; i < word.length(); i++) {
 						final int deleteRow = (row-(maxCol-1))+(index+i);
-						final int deleteCol = maxCol-(index+i);
+						final int deleteCol = (maxCol-1)-(index+i);
 						deletedBlockIds.add(matrix[deleteRow][deleteCol].getId());
 					}
 				}
@@ -184,7 +183,7 @@ public class DeleteBlockLine {
 			final Block[][] matrix, final String word, final int order) {
 		Set<Integer> deletedBlockIds = new HashSet<Integer>();
 		
-		for (int row = 0; row < matrix.length - word.length(); row++) {
+		for (int row = 0; row < matrix.length+1 - word.length(); row++) {
 			// Maximum cells for the diagonal row
 			final int maxCol = Math.min(matrix[row].length, matrix.length-row);
 			// Create a sequence of characters of this diagonal row
@@ -198,7 +197,7 @@ public class DeleteBlockLine {
 				Set<Integer> indices = searchWord(rowWordSequence, word);
 				for (int index : indices) {
 					for (int i = 0; i < word.length(); i++) {
-						deletedBlockIds.add(matrix[row+index+i][index+i].getId());
+						deletedBlockIds.add(matrix[row+(index+i)][index+i].getId());
 					}
 				}
 			}
@@ -208,7 +207,9 @@ public class DeleteBlockLine {
 				Set<Integer> inverseIndices = searchWord(reversedSequence, word);
 				for (int index : inverseIndices) {
 					for (int i = 0; i < word.length(); i++) {
-						deletedBlockIds.add(matrix[row+index-i][index-i].getId());
+						final int deleteRow = (row+(maxCol-1))-(index+i);
+						final int deleteCol = (maxCol-1)-(index+i);
+						deletedBlockIds.add(matrix[deleteRow][deleteCol].getId());
 					}
 				}
 			}

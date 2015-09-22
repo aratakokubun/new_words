@@ -34,6 +34,8 @@ public class Menu extends Activity {
 					, int position, long id) {
 				MenuItem item = (MenuItem) ((ListView)parent).getItemAtPosition(position);
 				Intent intent = new Intent(context, item.getClazz());
+				// TODO
+				// Pass the information of game type
 				startActivity(intent);
 			}
 		});

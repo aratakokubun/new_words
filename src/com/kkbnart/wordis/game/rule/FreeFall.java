@@ -40,19 +40,8 @@ public class FreeFall {
 		return yPerFrame;
 	}
 	
-	/**
-	 * Set speed to move x on each frame
-	 * @param xPerFrame
-	 */
-	public void setXPerFrame(final float xPerFrame) {
+	public void setPerFrame(final float xPerFrame, final float yPerFrame) {
 		this.xPerFrame = xPerFrame;
-	}
-	
-	/**
-	 * Set speed to move y on each frame
-	 * @param yPerFrame
-	 */
-	public void setYPerFrame(final float yPerFrame) {
 		this.yPerFrame = yPerFrame;
 	}
 }

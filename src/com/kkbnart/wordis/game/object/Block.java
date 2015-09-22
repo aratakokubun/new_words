@@ -87,8 +87,8 @@ public class Block {
 	}
 	
 	private void drawImage(final Canvas canvas, final Paint paint, final Bitmap bitmap, final Board board) {
-		final int viewX = (int) (x * board.getXStep());
-		final int viewY = (int) (y * board.getYStep());
+		final int viewX = (int) (x * board.getXStep()) + board.getX();
+		final int viewY = (int) (y * board.getYStep()) + board.getY();
 		canvas.drawBitmap(
 				bitmap,
 				new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight()),
