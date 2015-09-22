@@ -1,9 +1,7 @@
 package com.kkbnart.wordis.game;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.util.AttributeSet;
@@ -14,24 +12,21 @@ import android.view.SurfaceView;
 import com.kkbnart.wordis.game.board.Board;
 import com.kkbnart.wordis.game.board.NextBlocks;
 import com.kkbnart.wordis.game.board.OperatedBlocks;
+import com.kkbnart.wordis.game.exception.InvalidParameterException;
 
 public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callback {
 	private static final String TAG = "GameSurfaceView";
-
+	
+	// Game activity
+	private Game gameActivity;
+	
 	public GameSurfaceView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		getHolder().addCallback(this);
 	}
 	
-	@SuppressLint("DrawAllocation")
-	public void draw(final Canvas canvas) {
-		// TODO
-		// Change draw method
-		final Paint paint = new Paint();
-		canvas.drawColor(Color.WHITE);
-		paint.setColor(Color.GRAY);
-		paint.setTextSize(100);
-		canvas.drawText("Text", 200, 200, paint);
+	public void setGameActivity(final Game gameActivity) {
+		this.gameActivity = gameActivity;
 	}
 	
 	public void draw(final Board board, final OperatedBlocks ob, final NextBlocks nb) {
@@ -62,14 +57,22 @@ public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 	public void surfaceChanged(SurfaceHolder holder, int format, int width,
 			int height) {
 		Canvas c = getHolder().lockCanvas();
-		draw(c);
+		try {
+			gameActivity.surfaceSizeChanged(width, height);
+		} catch (InvalidParameterException e) {
+			System.err.println("[width:" + width + ", height:" + height + "] are invalid");
+		}
 		getHolder().unlockCanvasAndPost(c);
 	}
 
 	@Override
 	public void surfaceCreated(SurfaceHolder holder) {
 		Canvas c = getHolder().lockCanvas();
-		draw(c);
+		try {
+			gameActivity.surfaceSizeChanged(c.getWidth(), c.getHeight());
+		} catch (InvalidParameterException e) {
+			System.err.println("[width:" + c.getWidth() + ", height:" + c.getHeight() + "] are invalid");
+		}
 		getHolder().unlockCanvasAndPost(c);
 	}
 

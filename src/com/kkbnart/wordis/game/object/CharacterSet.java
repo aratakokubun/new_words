@@ -1,6 +1,6 @@
 package com.kkbnart.wordis.game.object;
 
-import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.SparseArray;
@@ -11,8 +11,8 @@ public class CharacterSet {
 	// Character map
 	private SparseArray<Character> cmap = new SparseArray<Character>();
 	
-	public CharacterSet(final Context context) {
-		final Bitmap image = BitmapFactory.decodeResource(context.getResources(), R.drawable.alphabet);
+	public CharacterSet(final Resources resource) {
+		final Bitmap image = BitmapFactory.decodeResource(resource, R.drawable.alphabet);
 		final int w = 60;
 		final int h = 120;
 		int i = 0;
