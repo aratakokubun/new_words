@@ -60,7 +60,7 @@ public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 		try {
 			gameActivity.surfaceSizeChanged(width, height);
 		} catch (InvalidParameterException e) {
-			System.err.println("[width:" + width + ", height:" + height + "] are invalid");
+			Log.e(TAG, "[width:" + width + ", height:" + height + "] are invalid");
 		}
 		getHolder().unlockCanvasAndPost(c);
 	}
@@ -71,7 +71,7 @@ public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 		try {
 			gameActivity.surfaceSizeChanged(c.getWidth(), c.getHeight());
 		} catch (InvalidParameterException e) {
-			System.err.println("[width:" + c.getWidth() + ", height:" + c.getHeight() + "] are invalid");
+			Log.e(TAG, "[width:" + c.getWidth() + ", height:" + c.getHeight() + "] are invalid");
 		}
 		getHolder().unlockCanvasAndPost(c);
 	}

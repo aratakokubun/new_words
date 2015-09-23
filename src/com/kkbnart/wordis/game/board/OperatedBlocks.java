@@ -16,8 +16,6 @@ import com.kkbnart.wordis.game.rule.FreeFall;
  * @author kkbnart
  */
 public class OperatedBlocks extends BlockSet {
-	// private static final String TAG = OperatedBlocks.class.getSimpleName();
-	
 	// Root position of the operated blocks
 	private float rootX, rootY;
 	
