@@ -11,31 +11,39 @@ import com.kkbnart.wordis.game.object.BlockSet;
  * @author kkbnart
  */
 public class NearestMargin {
-
-	// TODO
-	// Refactor these methods!
-	// Too difficult to understand
 	
+	/**
+	 * Find the nearest boarder of block or board for the {@code dx} direction. <br>
+	 * If {@code dx} is smaller than the nearest boarder, return dx. <br>
+	 * In other cases, return the distance to the nearest boarder. <br>
+	 * 
+	 * @param board		Current board
+	 * @param blockSet	Block set to move
+	 * @param dx		Amount of move
+	 * @return	Distance to nearest board : abs(dx) > abs(distance)
+	 * 			dx : else
+	 */
 	public static float findNearestMarginX(final Board board, final BlockSet blockSet, final float dx) {
 		final Block[][] matrix = board.getMatrixedBlocks();
 		final RectF collisionRect = board.getCollisionRect();
-		float nearest = (dx > 0.f ? 1.0f : -1.0f) * board.getCollisionRect().width();
+		final boolean isPositive = dx > 0.f;
+		float nearest = (isPositive ? 1.0f : -1.0f) * board.getCollisionRect().width();
+		
 		for (Block b : blockSet.getBlocks()) {
 			// floaredCol : which column the left line of the block belongs to
 			// ceiledCol  : which column the right line of the block belongs to
 			final float blockCol = b.getX() - collisionRect.left;
 			final int floaredCol = (int)(Math.floor(blockCol));
 			final int ceiledCol  = (int)(Math.ceil(blockCol));
-			System.out.println(":"+b.getX() + ", ceiled:"+ceiledCol + ", floared:"+floaredCol);
 			
 			// floaredRow : which row the upper line of the block belongs to
 			// ceiledRow  : which row the bottom line of the block belongs to
 			final float blockRow = (collisionRect.height()-1) - (b.getY() - collisionRect.top);
 			final int floaredRow = (int)(Math.floor(blockRow));
 			final int ceiledRow  = (int)(Math.ceil(blockRow));
-			System.out.println("y:"+b.getY() + ", ceiled:"+ceiledRow + ", floared:"+floaredRow);
 
-			if (dx > 0.f) {
+			if (isPositive) {
+				// nearest > 0.f
 				float distance = collisionRect.width() - (blockCol+1);
 				for (int i = ceiledCol+1; i < collisionRect.width(); i++) {
 					if (matrix[floaredRow][i] != null || matrix[ceiledRow][i] != null) {
@@ -43,11 +51,11 @@ public class NearestMargin {
 						break;
 					}
 				}
-				// nearest > 0.f
 				if (nearest > distance) {
 					nearest = distance;
 				}
 			} else {
+				// nearest < 0.f
 				float distance = -blockCol;
 				for (int i = floaredCol-1; i >= 0; i--) {
 					if (matrix[floaredRow][i] != null || matrix[ceiledRow][i] != null) {
@@ -55,7 +63,6 @@ public class NearestMargin {
 						break;
 					}
 				}
-				// nearest < 0.f
 				if (nearest < distance) {
 					nearest = distance;
 				}
@@ -65,26 +72,37 @@ public class NearestMargin {
 		return Math.abs(dx) > Math.abs(nearest) ? nearest : dx;
 	}
 	
+	/**
+	 * Find the nearest boarder of block or board for the {@code dy} direction. <br>
+	 * If {@code dy} is smaller than the nearest boarder, return dy. <br>
+	 * In other cases, return the distance to the nearest boarder. <br>
+	 * 
+	 * @param board		Current board
+	 * @param blockSet	Block set to move
+	 * @param dy		Amount of move
+	 * @return	Distance to nearest board : abs(dy) > abs(distance)
+	 * 			dy : else
+	 */
 	public static float findNearestMarginY(final Board board, final BlockSet blockSet, final float dy) {
 		final Block[][] matrix = board.getMatrixedBlocks();
 		final RectF collisionRect = board.getCollisionRect();
-		float nearest = (dy > 0.f ? 1.0f : -1.0f) * board.getCollisionRect().height();
+		final boolean isPositive = dy > 0.f;
+		float nearest = (isPositive ? 1.0f : -1.0f) * board.getCollisionRect().height();
 		for (Block b : blockSet.getBlocks()) {
 			// floaredRow : which row the upper line of the block belongs to
 			// ceiledRow  : which row the bottom line of the block belongs to
 			final float blockRow = (collisionRect.height()-1) - (b.getY() - collisionRect.top);
 			final int floaredRow = (int)(Math.floor(blockRow));
 			final int ceiledRow  = (int)(Math.ceil(blockRow));
-			System.out.println("y:"+b.getY() + ", ceiled:"+ceiledRow + ", floared:"+floaredRow);
 			
 			// floaredCol : which column the left line of the block belongs to
 			// ceiledCol  : which column the right line of the block belongs to
 			final float blockCol = b.getX() - collisionRect.left;
 			final int floaredCol = (int)(Math.floor(blockCol));
 			final int ceiledCol  = (int)(Math.ceil(blockCol));
-			System.out.println(":"+b.getX() + ", ceiled:"+ceiledCol + ", floared:"+floaredCol);
 			
-			if (dy > 0.f) {
+			if (isPositive) {
+				// nearest > 0.f
 				float distance = blockRow;
 				for (int i = floaredRow-1; i >= 0; i--) {
 					if (matrix[i][ceiledCol] != null || matrix[i][floaredCol] != null) {
@@ -92,11 +110,11 @@ public class NearestMargin {
 						break;
 					}
 				}
-				// nearest > 0.f
 				if (nearest > distance) {
 					nearest = distance;
 				}
 			} else {
+				// nearest < 0.f
 				float distance = -(collisionRect.height() - (b.getY()+1));
 				for (int i = ceiledRow+1; i < collisionRect.height(); i++) {
 					if (matrix[i][ceiledCol] != null || matrix[i][floaredCol] != null) {
@@ -104,7 +122,6 @@ public class NearestMargin {
 						break;
 					}
 				}
-				// nearest < 0.f
 				if (nearest < distance) {
 					nearest = distance;
 				}
