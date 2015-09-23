@@ -1,9 +1,20 @@
 package com.kkbnart.wordis.game.object;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import android.content.Context;
+import android.graphics.Point;
+
+import com.kkbnart.utils.FileIOUtils;
+import com.kkbnart.wordis.Constants;
 import com.kkbnart.wordis.game.exception.BlockCreateException;
+import com.kkbnart.wordis.game.exception.LoadPropertyException;
 
 
 /**
@@ -87,11 +98,11 @@ public class BlockSetFactory {
 	 */
 	public BlockSet create(final PatternDefinition pd) throws BlockCreateException {
 		ArrayList<Block> blocks = new ArrayList<Block>();
-		for (int[] p : pd.getPositions()) {
+		for (Point p : pd.getPositions()) {
 			final int randomIndex = (int)(Math.random()*charaPatterns.size());
 			final Character c = (Character)charaPatterns.keySet().toArray()[randomIndex];
 			final int id = BlockIdFactory.getInstance().assignIds(1)[0]; // Get first element
-			final Block b = new Block(/*color=*/charaPatterns.get(c), /*character=*/c, /*id=*/id, /*x=*/p[0], /*y=*/p[1]);
+			final Block b = new Block(/*color=*/charaPatterns.get(c), /*character=*/c, /*id=*/id, /*x=*/p.x, /*y=*/p.y);
 			blocks.add(b);
 		}
 		return new BlockSet(blocks, pd.getCenter());
@@ -140,5 +151,43 @@ public class BlockSetFactory {
 	
 	public String getWord() {
 		return word;
+	}
+
+	/**
+	 * Load block patterns from asset file. <br>
+	 * 
+	 * @param propertyName	Block pattern property name
+	 * @param context		Android activity context
+	 * @throws LoadPropertyException Can not read specified property
+	 */
+	public void readJson(final String propertyName, final Context context) throws LoadPropertyException {
+		try {
+			// Read from JSON objects
+			final String jsonStr = FileIOUtils.loadTextAsset(Constants.BLOCK_PATTERN_JSON, context);
+			final JSONObject property = (new JSONObject(jsonStr)).getJSONObject(propertyName);
+			
+			// Add move amount of each direction
+			final JSONArray patterns = property.getJSONArray("patterns");
+			for (int i = 0; i < patterns.length(); i++) {
+				final JSONObject pattern = patterns.getJSONObject(i);
+				final int centerIndex = pattern.getInt("center");
+				final float weight = (float)pattern.getDouble("weight");
+				final JSONArray blocks = pattern.getJSONArray("blocks");
+				ArrayList<Point> blockPos = new ArrayList<Point>();
+				for (int j = 0; j < blocks.length(); j++) {
+					final JSONObject pos = blocks.getJSONObject(j);
+					final int x = pos.getInt("x");
+					final int y = pos.getInt("y");
+					blockPos.add(new Point(x, y));
+				}
+				// Validate
+				if (centerIndex >= blockPos.size()) {
+					throw new LoadPropertyException();
+				}
+				registerBlockPatterns(new PatternDefinition(blockPos, centerIndex), weight);
+			}
+		} catch (IOException | JSONException e) {
+			throw new LoadPropertyException();
+		}
 	}
 }
