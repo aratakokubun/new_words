@@ -9,13 +9,13 @@ import com.kkbnart.wordis.game.board.NextBlocks;
 import com.kkbnart.wordis.game.board.OperatedBlocks;
 import com.kkbnart.wordis.game.exception.BlockCreateException;
 import com.kkbnart.wordis.game.exception.InvalidParameterException;
+import com.kkbnart.wordis.game.exception.LoadPropertyException;
 import com.kkbnart.wordis.game.object.Block;
 import com.kkbnart.wordis.game.object.BlockColorSet;
 import com.kkbnart.wordis.game.object.BlockIdFactory;
 import com.kkbnart.wordis.game.object.BlockSetFactory;
 import com.kkbnart.wordis.game.object.CharacterSet;
 import com.kkbnart.wordis.game.object.Collision;
-import com.kkbnart.wordis.game.object.PatternDefinition;
 import com.kkbnart.wordis.game.rule.DeleteBlockLine;
 
 public class GameManager implements Runnable {
@@ -98,19 +98,15 @@ public class GameManager implements Runnable {
 	 * Create block set factory depends on {@code word}. <br>
 	 * 
 	 * @param activity	Activity to get resources
-	 * @throws BlockCreateException Can not create new block
+	 * @throws BlockCreateException  Can not create new block
+	 * @throws LoadPropertyException Can not read property file
 	 */
-	public void createBlockSetFactory(final Activity activity, final String word) throws BlockCreateException {
+	public void createBlockSetFactory(final Activity activity, final String word) throws BlockCreateException, LoadPropertyException {
 		if (blockSetFactory == null) {
 			BlockColorSet bcs = new BlockColorSet(activity.getResources());
 			CharacterSet cs = new CharacterSet(activity.getResources());
 			blockSetFactory = new BlockSetFactory(bcs, cs);
-			blockSetFactory.registerBlockPatterns(PatternDefinition.BAR, 1.0);
-			blockSetFactory.registerBlockPatterns(PatternDefinition.L, 0.5);
-			blockSetFactory.registerBlockPatterns(PatternDefinition.INV_L, 0.5);
-			blockSetFactory.registerBlockPatterns(PatternDefinition.Z, 0.5);
-			blockSetFactory.registerBlockPatterns(PatternDefinition.INV_Z, 0.5);
-			blockSetFactory.registerBlockPatterns(PatternDefinition.BUMP, 1.0);
+			blockSetFactory.readJson("normal", activity);
 		}
 		blockSetFactory.registerCharacterPattern(word);
 	}

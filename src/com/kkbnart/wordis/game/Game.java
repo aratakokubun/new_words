@@ -35,25 +35,25 @@ public class Game extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		manager = new GameManager();
+		
 		// Load property files
 		try {
 			// FIXME
 			// These variables are passed from menu with static class or Intent
 			loadGameProperties("test", "downFall");
-		} catch (LoadPropertyException e) {
+			manager.createBlockSetFactory(this, "TEST");
+		} catch (BlockCreateException | LoadPropertyException e) {
 			// TODO
 			// Handle exception
 			// finish activity
 		}
-		
-		manager = new GameManager();
 		
 		// Get display size and update depending on the size
 		DisplayMetrics displaymetrics = new DisplayMetrics();
 		getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
 		int width = displaymetrics.widthPixels;
 		int height = displaymetrics.heightPixels;
-		
 		try {
 			surfaceSizeChanged(width, height);
 		} catch (InvalidParameterException e) {
@@ -95,12 +95,11 @@ public class Game extends Activity {
 		manager.setGameSurfaceView(gsv);
 		
 		try {
-			// FIXME
-			manager.createBlockSetFactory(this, "TEST");
 			manager.startGame();
 		} catch (BlockCreateException e) {
 			// TODO
 			// Show message that game is terminated with exception.
+			e.printStackTrace();
 		}
 	}
 	
