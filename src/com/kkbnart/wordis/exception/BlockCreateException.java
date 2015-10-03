@@ -1,4 +1,4 @@
-package com.kkbnart.wordis.game.exception;
+package com.kkbnart.wordis.exception;
 
 public class BlockCreateException extends Exception {
 	private static final long serialVersionUID = 7637854732310798213L;

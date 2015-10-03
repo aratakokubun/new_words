@@ -6,7 +6,7 @@ import java.util.Iterator;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 
-import com.kkbnart.wordis.game.exception.BlockCreateException;
+import com.kkbnart.wordis.exception.BlockCreateException;
 import com.kkbnart.wordis.game.object.Block;
 import com.kkbnart.wordis.game.object.BlockSet;
 import com.kkbnart.wordis.game.object.BlockSetFactory;
