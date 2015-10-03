@@ -4,7 +4,9 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
+import com.kkbnart.wordis.exception.FontNotExistException;
 import com.kkbnart.wordis.menu.Menu;
+import com.kkbnart.wordis.util.WordisFonts;
 
 public class Launcher extends Activity {
 
@@ -14,15 +16,23 @@ public class Launcher extends Activity {
 		
 		// TODO
 		// Load files and connect DB here
-		// setContentView(R.layout.activity_main);
+		try {
+			readCommonFiles();
+		} catch (FontNotExistException e) {
+			// TODO Auto-generated catch block
+			// Finish activity
+		}
 		
 		// Instantly move to menu activity
 		Intent intent = new Intent(getApplicationContext(), Menu.class);
 		startActivity(intent);
 		
-		// FIXME
-		// The activity is not finished
 		// Finish this activity
 		finish();
+	}
+	
+	private void readCommonFiles() throws FontNotExistException {
+		// Read font files
+		WordisFonts.getInstance().readFontFiles(this);
 	}
 }

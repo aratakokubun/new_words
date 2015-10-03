@@ -12,7 +12,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kkbnart.utils.FileIOUtils;
 import com.kkbnart.wordis.Constants;
-import com.kkbnart.wordis.game.exception.LoadPropertyException;
+import com.kkbnart.wordis.exception.LoadPropertyException;
 
 /**
  * <p>

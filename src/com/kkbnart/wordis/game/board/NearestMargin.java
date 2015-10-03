@@ -66,7 +66,6 @@ public class NearestMargin {
 				if (nearest < distance) {
 					nearest = distance;
 				}
-				System.out.println(nearest);
 			}
 		}
 		return Math.abs(dx) > Math.abs(nearest) ? nearest : dx;
@@ -107,6 +106,7 @@ public class NearestMargin {
 				for (int i = floaredRow-1; i >= 0; i--) {
 					if (matrix[i][ceiledCol] != null || matrix[i][floaredCol] != null) {
 						distance = (blockRow-1) - i;
+						System.out.println("sysout" + (distance - blockRow+1));
 						break;
 					}
 				}
@@ -119,6 +119,7 @@ public class NearestMargin {
 				for (int i = ceiledRow+1; i < collisionRect.height(); i++) {
 					if (matrix[i][ceiledCol] != null || matrix[i][floaredCol] != null) {
 						distance = -(i - (blockRow+1));
+						System.out.println("sysout" + (distance - blockRow-1));
 						break;
 					}
 				}

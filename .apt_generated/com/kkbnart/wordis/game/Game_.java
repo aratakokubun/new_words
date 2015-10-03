@@ -78,21 +78,6 @@ public final class Game_
     public void onViewChanged(HasViews hasViews) {
         gsv = ((GameSurfaceView) hasViews.findViewById(id.mySurfaceView));
         {
-            View view = hasViews.findViewById(id.upperButton);
-            if (view!= null) {
-                view.setOnClickListener(new OnClickListener() {
-
-
-                    @Override
-                    public void onClick(View view) {
-                        Game_.this.upperButtonClick(view);
-                    }
-
-                }
-                );
-            }
-        }
-        {
             View view = hasViews.findViewById(id.rightButton);
             if (view!= null) {
                 view.setOnClickListener(new OnClickListener() {
@@ -101,21 +86,6 @@ public final class Game_
                     @Override
                     public void onClick(View view) {
                         Game_.this.rightButtonClick(view);
-                    }
-
-                }
-                );
-            }
-        }
-        {
-            View view = hasViews.findViewById(id.counterClockwiseButton);
-            if (view!= null) {
-                view.setOnClickListener(new OnClickListener() {
-
-
-                    @Override
-                    public void onClick(View view) {
-                        Game_.this.counterClockwiseButtonClick(view);
                     }
 
                 }
@@ -138,14 +108,14 @@ public final class Game_
             }
         }
         {
-            View view = hasViews.findViewById(id.clockwiseButton);
+            View view = hasViews.findViewById(id.upperButton);
             if (view!= null) {
                 view.setOnClickListener(new OnClickListener() {
 
 
                     @Override
                     public void onClick(View view) {
-                        Game_.this.clockwiseButtonClick(view);
+                        Game_.this.upperButtonClick(view);
                     }
 
                 }
@@ -161,6 +131,36 @@ public final class Game_
                     @Override
                     public void onClick(View view) {
                         Game_.this.downButtonClick(view);
+                    }
+
+                }
+                );
+            }
+        }
+        {
+            View view = hasViews.findViewById(id.counterClockwiseButton);
+            if (view!= null) {
+                view.setOnClickListener(new OnClickListener() {
+
+
+                    @Override
+                    public void onClick(View view) {
+                        Game_.this.counterClockwiseButtonClick(view);
+                    }
+
+                }
+                );
+            }
+        }
+        {
+            View view = hasViews.findViewById(id.clockwiseButton);
+            if (view!= null) {
+                view.setOnClickListener(new OnClickListener() {
+
+
+                    @Override
+                    public void onClick(View view) {
+                        Game_.this.clockwiseButtonClick(view);
                     }
 
                 }

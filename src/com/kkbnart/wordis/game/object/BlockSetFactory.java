@@ -13,8 +13,8 @@ import android.graphics.Point;
 
 import com.kkbnart.utils.FileIOUtils;
 import com.kkbnart.wordis.Constants;
-import com.kkbnart.wordis.game.exception.BlockCreateException;
-import com.kkbnart.wordis.game.exception.LoadPropertyException;
+import com.kkbnart.wordis.exception.BlockCreateException;
+import com.kkbnart.wordis.exception.LoadPropertyException;
 
 
 /**
