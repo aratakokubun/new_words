@@ -10,7 +10,7 @@ gen
 *.png
 libs
 lint.xml
-*.txt
 *.cfg
 *.properties
 res
+proguard-project.txt

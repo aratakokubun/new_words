@@ -11,55 +11,55 @@ import android.app.Activity;
 import android.graphics.PointF;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.CompoundButton;
 
+import com.kkbnart.wordis.Constants;
 import com.kkbnart.wordis.R;
-import com.kkbnart.wordis.game.exception.BlockCreateException;
-import com.kkbnart.wordis.game.exception.InvalidParameterException;
-import com.kkbnart.wordis.game.exception.LoadPropertyException;
+import com.kkbnart.wordis.exception.BlockCreateException;
+import com.kkbnart.wordis.exception.InvalidParameterException;
+import com.kkbnart.wordis.exception.LoadPropertyException;
+import com.kkbnart.wordis.exception.NoAnimationException;
 import com.kkbnart.wordis.game.rule.MoveAmount;
 import com.kkbnart.wordis.game.util.Direction;
 
 @Fullscreen
 @EActivity(R.layout.game)
-public class Game extends Activity {
+public class Game extends Activity implements IGame {
+	private static final String TAG = Game.class.getSimpleName();
+	
 	// Game manager to proceed everything except control with user interface
 	private GameManager manager;
 
-	
 	@ViewById(R.id.mySurfaceView)
 	GameSurfaceView gsv;
 	
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		manager = new GameManager();
+		
 		// Load property files
 		try {
 			// FIXME
 			// These variables are passed from menu with static class or Intent
 			loadGameProperties("test", "downFall");
-		} catch (LoadPropertyException e) {
+			manager.createBlockSetFactory(this, "normal", "TEST");
+		} catch (BlockCreateException | LoadPropertyException e) {
 			// TODO
 			// Handle exception
 			// finish activity
 		}
-		
-		manager = new GameManager();
 		
 		// Get display size and update depending on the size
 		DisplayMetrics displaymetrics = new DisplayMetrics();
 		getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
 		int width = displaymetrics.widthPixels;
 		int height = displaymetrics.heightPixels;
-		
-		try {
-			surfaceSizeChanged(width, height);
-		} catch (InvalidParameterException e) {
-			// TODO
-			// Finish activity if exception occurred
-		}
+		surfaceSizeChanged(width, height);
 	}
 	
 	/**
@@ -74,18 +74,16 @@ public class Game extends Activity {
 	}
 	
 	/**
-	 * Change parameters depending on surface size change. <br>
-	 * 
-	 * @param width		View surface size x
-	 * @param height	View surface size y
-	 * @throws InvalidParameterException	Invalid parameters are specified.
+	 * @see {@link IGame#surfaceSizeChanged(int, int)}
 	 */
-	public void surfaceSizeChanged(final int width, final int height) throws InvalidParameterException {
+	@Override
+	public void surfaceSizeChanged(final int width, final int height) {
 		try {
 			manager.surfaceSizeChanged(this, width, height);
-		} catch (BlockCreateException e) {
+		} catch (BlockCreateException | InvalidParameterException | NoAnimationException e) {
 			// TODO
 			// handle exception
+			if (Constants.D) Log.e(TAG, "[width:" + width + ", height:" + height + "] are invalid");
 		}
 	}
 	
@@ -95,12 +93,11 @@ public class Game extends Activity {
 		manager.setGameSurfaceView(gsv);
 		
 		try {
-			// FIXME
-			manager.createBlockSetFactory(this, "TEST");
 			manager.startGame();
 		} catch (BlockCreateException e) {
 			// TODO
 			// Show message that game is terminated with exception.
+			e.printStackTrace();
 		}
 	}
 	
@@ -152,5 +149,13 @@ public class Game extends Activity {
 			System.exit(RESULT_OK);
 			return false;
 		}
+	}
+
+	/**
+	 * @see {@link IGame#onSurfaceTouched(MotionEvent)}
+	 */
+	@Override
+	public void onSurfaceTouched(MotionEvent event) {
+		manager.onSurfaceTouched(event);
 	}
 }

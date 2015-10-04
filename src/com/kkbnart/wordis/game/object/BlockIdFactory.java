@@ -3,10 +3,11 @@ package com.kkbnart.wordis.game.object;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.kkbnart.wordis.game.exception.BlockCreateException;
+import com.kkbnart.wordis.exception.BlockCreateException;
 
 /**
- * Retain ids set of all blocks and assign ids to new blocks <br>
+ * Retain ids set of all blocks and assign ids to new blocks. <br>
+ * To access this class instance, use {@link #getInstance()}. <br>
  * 
  * @author kkbnart
  */
@@ -23,6 +24,11 @@ public class BlockIdFactory {
 	// Ids already assigned
 	private Set<Integer> assignedIds = new HashSet<Integer>();
 	
+	/**
+	 * Get singleton instance of this class. <br>
+	 * 
+	 * @return BlockIdFactory instance
+	 */
 	public static synchronized BlockIdFactory getInstance() {
 		if (instance == null) {
 			instance = new BlockIdFactory();

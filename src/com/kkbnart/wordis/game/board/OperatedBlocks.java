@@ -9,12 +9,13 @@ import com.kkbnart.wordis.game.object.Collision;
 import com.kkbnart.wordis.game.rule.FreeFall;
 
 /**
- * Blocks which are on operation
+ * Blocks which are on operation. <br>
+ * All update methods {@link #autoUpdate()}, {@link #operate(Board, boolean)}, {@link #operate(Board, float, float)} are synchronized <br>
+ * to avoid fetching value while other method is changing it. <br> 
+ * 
  * @author kkbnart
  */
 public class OperatedBlocks extends BlockSet {
-	// private static final String TAG = OperatedBlocks.class.getSimpleName();
-	
 	// Root position of the operated blocks
 	private float rootX, rootY;
 	
@@ -53,12 +54,16 @@ public class OperatedBlocks extends BlockSet {
 	
 	/**
 	 * Move blocks with dx and dy. <br>
+	 * If dx or dy is larger than the nearest boarder, fix them with {@link NearestMargin} in this method. <br>
 	 * 
 	 * @param board	Current board
 	 * @param dx 	Amount of move x	
 	 * @param dy	Amount of move y
 	 */
-	public synchronized void operate(final Board board, final float dx, final float dy) {
+	public synchronized void operate(final Board board, float dx, float dy) {
+		dx = NearestMargin.findNearestMarginX(board, this, dx);
+		dy = NearestMargin.findNearestMarginY(board, this, dy);
+		
 		// Try for (dx, dy) move
 		BlockSet test = testUpdate(dx, dy);
 		if (!Collision.isCollided(board, test)) {

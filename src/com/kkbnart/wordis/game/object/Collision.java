@@ -49,7 +49,6 @@ public class Collision {
 			for (int i = 0 ; i < boardBlocks.size(); i++) {
 				Block b2 = boardBlocks.get(boardBlocks.keyAt(i));
 				if (isContacted(board, b1, b2)) {
-				// if (!RectF.intersects(b1.getRect(), b2.getRect()) && isContacted(board, b1, b2)) {
 					return true;
 				}
 			}

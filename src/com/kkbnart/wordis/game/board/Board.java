@@ -7,12 +7,13 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 import android.util.SparseArray;
 
-import com.kkbnart.wordis.game.exception.InvalidParameterException;
+import com.kkbnart.wordis.exception.InvalidParameterException;
 import com.kkbnart.wordis.game.object.Block;
 import com.kkbnart.wordis.game.object.BlockSet;
 
 /**
- * Board to contain all settled blocks
+ * Board to contain all settled blocks. <br>
+ * 
  * @author kkbnart
  */
 public class Board {
@@ -21,10 +22,10 @@ public class Board {
 	// Pixel width and height of the board
 	private int width, height;
 	// Matrix size of the board, with row(y) and column(x)
-	private int row, column;
+	private int column, row;
 	// Matrix size of collision of the board
 	private int collisionX, collisionY;
-	private int collisionRow, collisionColumn;
+	private int collisionColumn, collisionRow;
 	// Blocks which the board contains
 	private SparseArray<Block> blocks = new SparseArray<Block>();
 
@@ -35,19 +36,19 @@ public class Board {
 	 * @param y					Upper line of the board
 	 * @param width 			Width of the board
 	 * @param height			Height of the board
-	 * @param row				Row number of the board matrix
 	 * @param column			Column number of the board matrix
+	 * @param row				Row number of the board matrix
 	 * @param collisionX		Left line of the collision of the board
 	 * @param collisionY		Upper line of the collision of the board
-	 * @param collisionRow		Row number of the collision of the board
 	 * @param collisionColumn	Column number of the collision of the board
+	 * @param collisionRow		Row number of the collision of the board
 	 * @throws InvalidParameterException	Invalid parameters are specified
 	 */
 	public Board(final int x, final int y, final int width, final int height,
-			final int row, final int column, final int collisionX, final int collisionY,
-			final int collisionRow, final int collisionColumn) throws InvalidParameterException {
+			final int column, final int row, final int collisionX, final int collisionY,
+			final int collisionColumn, final int collisionRow) throws InvalidParameterException {
 		this.updateBoardArea(x, y, width, height);
-		this.updateBoardSize(row, column, collisionX, collisionY, collisionRow, collisionColumn);
+		this.updateBoardSize(column, row, collisionX, collisionY, collisionColumn, collisionRow);
 	}
 	
 	/**
@@ -72,25 +73,25 @@ public class Board {
 	 * Update board matrix size. <br>
 	 * This method is not allowed while playing. <br>
 	 * 
-	 * @param row				Row number of the board matrix
 	 * @param column			Column number of the board matrix
+	 * @param row				Row number of the board matrix
 	 * @param collisionX		Left line of the collision of the board
 	 * @param collisionY		Upper line of the collision of the board
-	 * @param collisionRow		Row number of the collision of the board
 	 * @param collisionColumn	Column number of the collision of the board
+	 * @param collisionRow		Row number of the collision of the board
 	 */
-	public void updateBoardSize(final int row, final int column,
+	public void updateBoardSize(final int column, final int row,
 			final int collisionX, final int collisionY,
-			final int collisionRow, final int collisionColumn) throws InvalidParameterException {
-		if (row<=0 || column<=0 || collisionRow<=collisionX || collisionColumn<=collisionY) {
+			final int collisionColumn, final int collisionRow) throws InvalidParameterException {
+		if (row<=0 || column<=0 || collisionColumn<=collisionX || collisionRow<=collisionY) {
 			throw new InvalidParameterException();
 		}
-		this.row =  row;
 		this.column = column;
+		this.row =  row;
 		this.collisionX = collisionX;
 		this.collisionY = collisionY;
-		this.collisionRow = collisionRow;
 		this.collisionColumn = collisionColumn;
+		this.collisionRow = collisionRow;
 	}
 	
 	/**
@@ -212,9 +213,6 @@ public class Board {
 	 * @return Matrix form of the board blocks
 	 */
 	public Block[][] getMatrixedBlocks() {
-		// TODO
-		// row = 0, col = 0などの状況でエラーが発生する可能性がある
-		
 		// Create matrix of board row*column size
 		Block[][] matrix = new Block[collisionRow][collisionColumn];
 		
