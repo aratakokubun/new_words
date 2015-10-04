@@ -8,6 +8,8 @@ import org.androidannotations.annotations.Fullscreen;
 import org.androidannotations.annotations.ViewById;
 
 import android.app.Activity;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.graphics.PointF;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -15,6 +17,8 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
+import android.widget.Button;
 import android.widget.CompoundButton;
 
 import com.kkbnart.wordis.Constants;
@@ -129,8 +133,48 @@ public class Game extends Activity implements IGame {
 	@CheckedChange(R.id.menuButton)
 	protected void menuButtonCheckedChange(final CompoundButton button,
 			final Boolean isChecked) {
-		// TODO
-		// Show menu dialog
+		final Dialog dialog = new Dialog(this, R.style.Theme_CustomDialog);
+		dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+		dialog.setContentView(R.layout.game_menu_dialog);
+		dialog.setTitle(R.string.game_menu_dialog);
+		dialog.show();
+		
+		// Button action
+		// Retry
+		final Button retry = (Button) dialog.findViewById(R.id.retryButton);
+		retry.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				// TODO
+			}
+		});
+		// Exit
+		final Button exit = (Button) dialog.findViewById(R.id.exitButton);
+		exit.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				// TODO
+			}
+		});
+		// Cancel
+		final Button cancel = (Button) dialog.findViewById(R.id.cancelButton);
+		cancel.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				dialog.cancel();
+			}
+		});
+		
+		// Cancel action
+		dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+			@Override
+			public void onCancel(DialogInterface dialog) {
+				manager.resumeGame();
+			}
+		});
+		
+		// Suspend game
+		manager.suspendGame();
 	}
 	
 	private void moveBlock(final int dirId) {

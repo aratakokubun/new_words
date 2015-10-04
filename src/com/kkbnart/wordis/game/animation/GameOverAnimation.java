@@ -26,8 +26,8 @@ public class GameOverAnimation extends GameAnimation {
 	private static final String TAG = GameOverAnimation.class.getSimpleName();
 	
 	// Block collapse
-	private static final float minSpeed = 0.005f;
-	private static final float maxSpeed = 0.015f;
+	private static final float minSpeed = 0.012f;
+	private static final float maxSpeed = 0.02f;
 	private float[] collapseSpeed = null;
 	private AnimationTime collapseTime;
 	

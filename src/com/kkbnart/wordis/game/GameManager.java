@@ -35,6 +35,8 @@ public class GameManager implements Runnable {
 	private BlockSetFactory blockSetFactory = null;
 	// Manage and execute animations
 	private AnimationManager animationManager = null;
+	// Game status
+	private GameAction gameAction;
 	// Flag to continue game
 	private boolean continueGame = true;
 	
@@ -56,7 +58,8 @@ public class GameManager implements Runnable {
 		final GameTypeDefinition gtd = GameTypeDefinition.getInstance();
 		next.initializeBlockSet(gtd.nextSize);
 		operated.setBlocks(next.releaseNextBlocks());
-		
+
+		gameAction = GameAction.NONE;
 		continueGame = true;
 		Thread gameThread = new Thread(this);
 		gameThread.start();
@@ -170,7 +173,7 @@ public class GameManager implements Runnable {
 	 * Synchronized because update is conflicted with user operation.
 	 */
 	private synchronized void invokeMainProcess() {
-		if (!checkIsNull()) {
+		if (!checkIsNull() && gameAction != GameAction.PAUSE) {
 			if (animationManager.hasAnimation()) {
 				updateAnimation();
 			} else {
@@ -190,8 +193,8 @@ public class GameManager implements Runnable {
 	 * Update view animation and take game actions after the animation. <br>
 	 */
 	private void updateAnimation() {
-		GameAction action = gsv.drawAnimation(animationManager, board);
-		switch (action) {
+		gameAction = gsv.drawAnimation(animationManager, board);
+		switch (gameAction) {
 		case GAMEFINISH:
 			continueGame = false;
 			break;
@@ -260,6 +263,14 @@ public class GameManager implements Runnable {
 	private boolean checkIsNull() {
 		return board == null || operated == null || next == null || gsv == null
 				|| blockSetFactory == null || animationManager == null;
+	}
+	
+	public void suspendGame() {
+		gameAction = GameAction.PAUSE;
+	}
+	
+	public void resumeGame() {
+		gameAction = GameAction.NONE;
 	}
 
 	/**
