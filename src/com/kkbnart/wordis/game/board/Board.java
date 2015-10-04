@@ -12,7 +12,8 @@ import com.kkbnart.wordis.game.object.Block;
 import com.kkbnart.wordis.game.object.BlockSet;
 
 /**
- * Board to contain all settled blocks
+ * Board to contain all settled blocks. <br>
+ * 
  * @author kkbnart
  */
 public class Board {
