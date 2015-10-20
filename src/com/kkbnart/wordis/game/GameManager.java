@@ -2,8 +2,6 @@ package com.kkbnart.wordis.game;
 
 import java.util.Set;
 
-import android.os.Handler;
-import android.os.Message;
 import android.view.MotionEvent;
 
 import com.kkbnart.wordis.exception.BlockCreateException;
@@ -23,7 +21,7 @@ import com.kkbnart.wordis.game.player.PlayerStatusMap;
 import com.kkbnart.wordis.game.player.WordisPlayer;
 import com.kkbnart.wordis.game.rule.DeleteBlockLine;
 
-public class GameManager implements Runnable {
+public class GameManager implements GameThreadManager {
 	// Game board
 	private Board board = null;
 	// Operated block
@@ -43,18 +41,16 @@ public class GameManager implements Runnable {
 	IGameTerminate gameTerminate;
 	
 	// Game thread
-	Thread gameThread = null;
+	GameThread gameThread = null;
 	
 	// Game type
 	private GameType gameType;
 	// Game status
 	private GameStatus gameStatus;
 	
-	// Sleep time [ms]
-	private static final long SLEEP = 30;
-	
 	public GameManager(IGameTerminate gameTerminate) {
 		this.gameTerminate = gameTerminate;
+		this.gameThread = new GameThread(this);
 	}
 	
 	public void setGameSurfaceView(final GameSurfaceView gsv) {
@@ -90,12 +86,7 @@ public class GameManager implements Runnable {
 		board.clearBlocks();
 
 		// Start game thread
-		if (gameThread == null) {
-			gameThread = new Thread(this);
-		}
-		if (!gameThread.isAlive()) {
-			gameThread.start();
-		}
+		gameThread.startThread();
 	}
 	
 	/**
@@ -147,46 +138,17 @@ public class GameManager implements Runnable {
 		}
 	}
 	
-	@Override
-	public void run() {
-		final long sleepTime = 10;
-		long prevTime = System.currentTimeMillis();
-		while (continueGame()) {
-			// Wait for SLEEP [ms]
-			long elapsedTime = System.currentTimeMillis() - prevTime;
-			while (elapsedTime < SLEEP) {
-				try {
-					Thread.sleep(sleepTime);
-				} catch (InterruptedException e) {
-					finishGame();
-					return;
-				}
-				elapsedTime = System.currentTimeMillis() - prevTime;
-			}
-			// Update previous time
-			prevTime = System.currentTimeMillis();
-			
-			invokeMainProcess();
-		}
-		
-		finishGame();
-	}
-	
 	/**
-	 * Judge if continue game. <br>
-	 * 
-	 * @return true  : continue game <br>
-	 * 		   false : terminate game <br>
+	 * @see GameThreadManager#continueGame()
 	 */
-	private boolean continueGame() {
+	public boolean continueGame() {
 		return gameStatus != GameStatus.GAMEFINISH;
 	}
 	
 	/**
-	 * Periodical process while game
-	 * Synchronized because update is conflicted with user operation.
+	 * @see GameThreadManager#invokeMainProcess()
 	 */
-	private synchronized void invokeMainProcess() {
+	public synchronized void invokeMainProcess() {
 		if (!checkIsNull() && gameStatus != GameStatus.PAUSE) {
 			if (animationManager.hasAnimation()) {
 				updateAnimation();
@@ -200,6 +162,26 @@ public class GameManager implements Runnable {
 				}
 				updateView();
 			}
+		}
+	}
+	
+	/**
+	 * @see GameThreadManager#finishGame()
+	 */
+	public void finishGame() {
+		switch (gameType) {
+		case TEST:
+		case PRACTICE:
+		case SINGLE:
+			final PlayerStatus myStatus = playerStatusMap.get(WordisPlayer.MY_PLAYER);
+			gameTerminate.terminateSingle(myStatus);
+			break;
+		case VS_CPU:
+			// TODO
+			break;
+		case MULTI_NET:
+			// TODO
+			break;
 		}
 	}
 	
@@ -270,52 +252,10 @@ public class GameManager implements Runnable {
 	}
 	
 	/**
-	 * Process called on finish game
-	 */
-	private void finishGame() {
-		handler.sendEmptyMessage(FINISH_GAME);
-		gameThread = null;
-	}
-	
-	/**
 	 * To forcefully finish game from outside, interrupt thread. <br>
 	 */
 	public void interruptGame() {
-		if (gameThread != null && gameThread.isAlive()) {
-			gameThread.interrupt();
-			gameThread = null;
-		}
-	}
-	
-	// Handler to inform action from game loop thread
-	private static final int FINISH_GAME = 0;
-	private Handler handler = new Handler(new Handler.Callback() {
-		@Override
-		public boolean handleMessage(Message msg) {
-			switch (msg.what) {
-			case FINISH_GAME:
-				handleFinishGame();
-				return true;
-			}
-			return false;
-		}
-	});
-	
-	private void handleFinishGame() {
-		switch (gameType) {
-		case TEST:
-		case PRACTICE:
-		case SINGLE:
-			final PlayerStatus myStatus = playerStatusMap.get(WordisPlayer.MY_PLAYER);
-			gameTerminate.terminateSingle(myStatus);
-			break;
-		case VS_CPU:
-			// TODO
-			break;
-		case MULTI_NET:
-			// TODO
-			break;
-		}
+		gameThread.initThread();
 	}
 	
 	public void suspendGame() {

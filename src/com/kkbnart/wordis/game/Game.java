@@ -131,7 +131,6 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 	}
 	
 	private void finishGame() {
-		manager.interruptGame();
 		// TODO
 		// Pass values to menu
 		Intent intent = new Intent(getApplicationContext(), Menu.class);

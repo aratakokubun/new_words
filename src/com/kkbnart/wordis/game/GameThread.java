@@ -1,5 +1,8 @@
 package com.kkbnart.wordis.game;
 
+import android.os.Handler;
+import android.os.Message;
+
 public class GameThread implements Runnable {
 	private GameThreadManager manager;
 	
@@ -39,7 +42,7 @@ public class GameThread implements Runnable {
 				try {
 					Thread.sleep(sleepTime);
 				} catch (InterruptedException e) {
-					manager.finishGame();
+					handleFinishGame();
 					return;
 				}
 				elapsedTime = System.currentTimeMillis() - prevTime;
@@ -50,6 +53,25 @@ public class GameThread implements Runnable {
 			manager.invokeMainProcess();
 		}
 		
-		manager.finishGame();
+		handleFinishGame();
 	}
+	
+	public void handleFinishGame() {
+		handler.sendEmptyMessage(FINISH_GAME);
+		thread = null;
+	}
+	
+	// Handler to inform action from game loop thread
+	private static final int FINISH_GAME = 0;
+	private Handler handler = new Handler(new Handler.Callback() {
+		@Override
+		public boolean handleMessage(Message msg) {
+			switch (msg.what) {
+			case FINISH_GAME:
+				manager.finishGame();
+				return true;
+			}
+			return false;
+		}
+	});
 }
