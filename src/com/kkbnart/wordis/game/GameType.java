@@ -9,7 +9,8 @@ public enum GameType {
 	TEST(0, "test"),
 	PRACTICE(1, "practice"),
 	SINGLE(2, "single"),
-	MULTI_NET(3, "multi_net");
+	VS_CPU(3, "vs cpu"),
+	MULTI_NET(4, "multi net");
 	
 	private int id;
 	private String jsonPropety;

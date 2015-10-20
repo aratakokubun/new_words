@@ -10,6 +10,8 @@ import org.androidannotations.annotations.ViewById;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
+import android.content.Intent;
 import android.graphics.PointF;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -17,8 +19,6 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.Window;
-import android.widget.Button;
 import android.widget.CompoundButton;
 
 import com.kkbnart.wordis.Constants;
@@ -27,36 +27,49 @@ import com.kkbnart.wordis.exception.BlockCreateException;
 import com.kkbnart.wordis.exception.InvalidParameterException;
 import com.kkbnart.wordis.exception.LoadPropertyException;
 import com.kkbnart.wordis.exception.NoAnimationException;
+import com.kkbnart.wordis.game.dialog.DialogDismissableOnClickListener;
+import com.kkbnart.wordis.game.dialog.GameMenuDialog;
+import com.kkbnart.wordis.game.dialog.SingleGameFinishDialog;
+import com.kkbnart.wordis.game.object.BlockSetFactory;
+import com.kkbnart.wordis.game.player.PlayerStatus;
 import com.kkbnart.wordis.game.rule.MoveAmount;
 import com.kkbnart.wordis.game.util.Direction;
+import com.kkbnart.wordis.menu.Menu;
 
+/**
+ * Wordis game activity 
+ * 
+ * @author kkbnart
+ */
 @Fullscreen
 @EActivity(R.layout.game)
-public class Game extends Activity implements IGame {
+public class Game extends Activity implements IGameActivity, IGameTerminate {
 	private static final String TAG = Game.class.getSimpleName();
-	
-	// Game manager to proceed everything except control with user interface
-	private GameManager manager;
 
 	@ViewById(R.id.mySurfaceView)
 	GameSurfaceView gsv;
 	
+	// Game manager to proceed everything except control with user interface
+	private GameManager manager;
+	// Game type of this game
+	private GameType type;
+	
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		manager = new GameManager();
+		manager = new GameManager(this);
 		
+		// FIXME
+		// These variables are passed from menu with static class or Intent
 		// Load property files
 		try {
-			// FIXME
-			// These variables are passed from menu with static class or Intent
 			loadGameProperties("test", "downFall");
-			manager.createBlockSetFactory(this, "normal", "TEST");
+			manager.setBlockSetFactory(new BlockSetFactory(this, "normal", "TEST"));
 		} catch (BlockCreateException | LoadPropertyException e) {
-			// TODO
-			// Handle exception
-			// finish activity
+			forceFinishGame(e);
+			return;
 		}
+		this.type = GameType.TEST;
 		
 		// Get display size and update depending on the size
 		DisplayMetrics displaymetrics = new DisplayMetrics();
@@ -64,6 +77,18 @@ public class Game extends Activity implements IGame {
 		int width = displaymetrics.widthPixels;
 		int height = displaymetrics.heightPixels;
 		surfaceSizeChanged(width, height);
+	}
+	
+	/**
+	 * Finish game forcefully.
+	 * 
+	 * @param e Exception occurred in methods which call this
+	 */
+	private void forceFinishGame(Exception e) {
+		manager.interruptGame();
+		// TODO
+		// finish activity
+		System.exit(RESULT_OK);
 	}
 	
 	/**
@@ -78,34 +103,77 @@ public class Game extends Activity implements IGame {
 	}
 	
 	/**
-	 * @see {@link IGame#surfaceSizeChanged(int, int)}
+	 * @see {@link IGameActivity#surfaceSizeChanged(int, int)}
 	 */
 	@Override
 	public void surfaceSizeChanged(final int width, final int height) {
 		try {
-			manager.surfaceSizeChanged(this, width, height);
+			manager.surfaceSizeChanged(width, height);
 		} catch (BlockCreateException | InvalidParameterException | NoAnimationException e) {
-			// TODO
-			// handle exception
-			if (Constants.D) Log.e(TAG, "[width:" + width + ", height:" + height + "] are invalid");
+			if (Constants.D) Log.e(TAG, "[width:" + width + ", height:" + height + "] are invalid.");
+			forceFinishGame(e);
 		}
 	}
 	
 	@AfterViews
-	protected void initGameManager(){
+	protected void setupView(){
 		gsv.setGameActivity(this);
 		manager.setGameSurfaceView(gsv);
-		
+		startGame();
+	}
+	
+	private void startGame() {
 		try {
-			manager.startGame();
+			manager.startGame(type);
 		} catch (BlockCreateException e) {
-			// TODO
-			// Show message that game is terminated with exception.
-			e.printStackTrace();
+			forceFinishGame(e);
 		}
 	}
 	
-	// View Button Event
+	private void finishGame() {
+		manager.interruptGame();
+		// TODO
+		// Pass values to menu
+		Intent intent = new Intent(getApplicationContext(), Menu.class);
+		startActivity(intent);
+	}
+
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		if (keyCode != KeyEvent.KEYCODE_BACK) {
+			return super.onKeyDown(keyCode, event);
+		} else {
+			// TODO
+			// Change according to game status
+			showGameMenu();
+			return false;
+		}
+	}
+	
+	private void showGameMenu() {
+		switch (type) {
+		case TEST:
+		case PRACTICE:
+		case SINGLE:
+		case VS_CPU:
+			Dialog dialog = new GameMenuDialog(this, retryClickListener,
+					exitClickListener, dialogCancelListener, true);
+			dialog.show();
+			manager.suspendGame();
+			break;
+		default:
+			break;
+		}
+	}
+
+	/**
+	 * @see {@link IGameActivity#onSurfaceTouched(MotionEvent)}
+	 */
+	@Override
+	public void onSurfaceTouched(MotionEvent event) {
+		manager.onSurfaceTouched(event);
+	}
+	
 	@Click(R.id.leftButton)
 	protected void leftButtonClick(final View view) {
 		moveBlock(Direction.LEFT.getId());
@@ -122,6 +190,12 @@ public class Game extends Activity implements IGame {
 	protected void downButtonClick(final View view) {
 		moveBlock(Direction.DOWN.getId());
 	}
+	
+	private void moveBlock(final int dirId) {
+		PointF p = MoveAmount.getInstance().getMove(dirId);
+		manager.moveBlock(p.x, p.y);
+	}
+	
 	@Click(R.id.counterClockwiseButton)
 	protected void counterClockwiseButtonClick(final View view) {
 		manager.rotateBlock(false);
@@ -130,76 +204,54 @@ public class Game extends Activity implements IGame {
 	protected void clockwiseButtonClick(final View view) {
 		manager.rotateBlock(true);
 	}
+	
 	@CheckedChange(R.id.menuButton)
 	protected void menuButtonCheckedChange(final CompoundButton button,
-			final Boolean isChecked) {
-		final Dialog dialog = new Dialog(this, R.style.Theme_CustomDialog);
-		dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-		dialog.setContentView(R.layout.game_menu_dialog);
-		dialog.setTitle(R.string.game_menu_dialog);
+			final Boolean isChecked) {		
+		Dialog dialog = new GameMenuDialog(this, retryClickListener,
+				exitClickListener, dialogCancelListener, /*cancel button enabled = */ true);
 		dialog.show();
-		
-		// Button action
-		// Retry
-		final Button retry = (Button) dialog.findViewById(R.id.retryButton);
-		retry.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				// TODO
-			}
-		});
-		// Exit
-		final Button exit = (Button) dialog.findViewById(R.id.exitButton);
-		exit.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				// TODO
-			}
-		});
-		// Cancel
-		final Button cancel = (Button) dialog.findViewById(R.id.cancelButton);
-		cancel.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				dialog.cancel();
-			}
-		});
-		
-		// Cancel action
-		dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-			@Override
-			public void onCancel(DialogInterface dialog) {
-				manager.resumeGame();
-			}
-		});
-		
-		// Suspend game
 		manager.suspendGame();
 	}
 	
-	private void moveBlock(final int dirId) {
-		PointF p = MoveAmount.getInstance().getMove(dirId);
-		manager.moveBlock(p.x, p.y);
-	}
-
-	@Override
-	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		if (keyCode != KeyEvent.KEYCODE_BACK) {
-			return super.onKeyDown(keyCode, event);
-		} else {
-			// FIXME
-			// Show game option
-			// finish();
-			System.exit(RESULT_OK);
-			return false;
+	// On Click Listener for game menu dialog
+	private DialogDismissableOnClickListener retryClickListener = new DialogDismissableOnClickListener() {
+		@Override
+		public void onClick(View v) {
+			startGame();
+			dismiss();
 		}
+	};
+	
+	private DialogDismissableOnClickListener exitClickListener = new DialogDismissableOnClickListener() {
+		@Override
+		public void onClick(View v) {
+			finishGame();
+			dismiss();
+		}
+	};
+	
+	private OnCancelListener dialogCancelListener = new OnCancelListener() {
+		@Override
+		public void onCancel(DialogInterface dialog) {
+			manager.resumeGame();
+		}
+	};
+
+	@Override
+	public void terminateSingle(PlayerStatus myStatus) {
+		Dialog dialog = new SingleGameFinishDialog(this, retryClickListener,
+				exitClickListener, myStatus.getScore(), myStatus.getMaxChain());
+		dialog.show();
 	}
 
-	/**
-	 * @see {@link IGame#onSurfaceTouched(MotionEvent)}
-	 */
 	@Override
-	public void onSurfaceTouched(MotionEvent event) {
-		manager.onSurfaceTouched(event);
+	public void terminateVsCpu(PlayerStatus myStatus, PlayerStatus cpuStatus) {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void terminateVersus(PlayerStatus myStatus, PlayerStatus oppStatus) {
+		// TODO Auto-generated method stub
 	}
 }

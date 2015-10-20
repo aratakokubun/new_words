@@ -49,6 +49,8 @@ public class OperatedBlocks extends BlockSet {
 	 * Update block position at each frame automatically. <br>
 	 */
 	public synchronized void autoUpdate() {
+		// FIXME
+		// count on time since last update
 		update(FreeFall.getInstance().getXPerFrame(), FreeFall.getInstance().getYPerFrame());
 	}
 	

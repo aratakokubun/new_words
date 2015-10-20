@@ -4,9 +4,9 @@ import android.graphics.Canvas;
 import android.view.MotionEvent;
 
 import com.kkbnart.wordis.exception.NoAnimationException;
-import com.kkbnart.wordis.game.GameAction;
-import com.kkbnart.wordis.game.WordisPlayer;
+import com.kkbnart.wordis.game.GameStatus;
 import com.kkbnart.wordis.game.board.Board;
+import com.kkbnart.wordis.game.player.WordisPlayer;
 
 /**
  * <p>
@@ -42,7 +42,7 @@ public class AnimationManager {
 	 * @param board		Current Board
 	 * @return	Game action
 	 */
-	public GameAction executeAnimation(final Canvas canvas, final Board board) {
+	public GameStatus executeAnimation(final Canvas canvas, final Board board) {
 		return animationExecutor.execute(canvas, board);
 	}
 	

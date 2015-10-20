@@ -3,8 +3,8 @@ package com.kkbnart.wordis.game.animation;
 import java.util.HashMap;
 
 import com.kkbnart.wordis.exception.NoAnimationException;
-import com.kkbnart.wordis.game.GameAction;
-import com.kkbnart.wordis.game.WordisPlayer;
+import com.kkbnart.wordis.game.GameStatus;
+import com.kkbnart.wordis.game.player.WordisPlayer;
 
 /**
  * Factory to create specific game animation
@@ -30,7 +30,7 @@ public class GameAnimationFactory {
 	public void updateAnimationSize(final WordisPlayer player, final int col, final int row, final int width, final int height) throws NoAnimationException {
 		// Register animations to factory
 		setAnimation(GameAnimationType.GAME_OVER, new GameOverAnimation(
-				/* animation time= */5000, GameAction.GAMEFINISH, player, col, row, width, height));
+				/* animation time= */5000, GameStatus.GAMEFINISH, player, col, row, width, height));
 	}
 	
 	/**

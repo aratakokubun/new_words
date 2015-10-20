@@ -1,13 +1,13 @@
 package com.kkbnart.wordis.game;
 
-public enum GameAction {
+public enum GameStatus {
 	NONE (0),
 	GAMEFINISH (3),
 	PAUSE (2),
 	ANIMATION (1);
 	
 	private int priority;
-	private GameAction(final int priority) {
+	private GameStatus(final int priority) {
 		this.priority = priority;
 	}
 	public int getPriority() {
@@ -19,7 +19,7 @@ public enum GameAction {
 	 * 
 	 * @return Prior game action
 	 */
-	public GameAction compare(final GameAction other) {
+	public GameStatus compare(final GameStatus other) {
 		if (this.priority > other.priority) {
 			return this;
 		} else {

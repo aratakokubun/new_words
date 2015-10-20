@@ -19,7 +19,7 @@ public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 	private static final String TAG = GameSurfaceView.class.getSimpleName();
 	
 	// Game Interface
-	private IGame game;
+	private IGameActivity game;
 	private boolean mDownTouch = false;	
 	 
 	public GameSurfaceView(Context context, AttributeSet attrs) {
@@ -27,7 +27,7 @@ public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 		getHolder().addCallback(this);
 	}
 	
-	public void setGameActivity(final IGame game) {
+	public void setGameActivity(final IGameActivity game) {
 		this.game = game;
 	}
 	
@@ -69,7 +69,7 @@ public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 	 * @param board				Current board
 	 * @return Game action to be taken after animation
 	 */
-	public GameAction drawAnimation(final AnimationManager animationManager, final Board board) {
+	public GameStatus drawAnimation(final AnimationManager animationManager, final Board board) {
 		final SurfaceHolder holder = getHolder();
 		Canvas c = null;
 		try {
@@ -87,7 +87,7 @@ public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 				Log.e(TAG, "Can not unlock canvas");
 			}
 		}
-		return GameAction.NONE;
+		return GameStatus.NONE;
 	}
 
 	@Override

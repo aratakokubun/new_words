@@ -2,7 +2,7 @@ package com.kkbnart.wordis.game.animation;
 
 import android.graphics.Canvas;
 
-import com.kkbnart.wordis.game.GameAction;
+import com.kkbnart.wordis.game.GameStatus;
 import com.kkbnart.wordis.game.board.Board;
 
 /**
@@ -22,9 +22,9 @@ public abstract class GameAnimation {
 	// Previous animation time
 	private long previousTime;
 	// Action after this animation
-	private GameAction postAction;
+	private GameStatus postAction;
 	
-	public GameAnimation(final long animationTime, final GameAction priorAction) {
+	public GameAnimation(final long animationTime, final GameStatus priorAction) {
 		this.animationTime = animationTime;
 		this.postAction = priorAction;
 	}
@@ -33,11 +33,11 @@ public abstract class GameAnimation {
 		this.animationTime = animationTime;
 	}
 	
-	public void setPriorAction(final GameAction priorAction) {
+	public void setPriorAction(final GameStatus priorAction) {
 		this.postAction = priorAction;
 	}
 	
-	public GameAction getPostAction() {
+	public GameStatus getPostAction() {
 		return postAction;
 	}
 	

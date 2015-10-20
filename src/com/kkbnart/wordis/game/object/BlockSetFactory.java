@@ -8,6 +8,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Point;
 
@@ -36,10 +37,20 @@ public class BlockSetFactory {
 	
 	/**
 	 * Constructor with specifying color set. <br>
+	 * 
+	 * @param activity	Android Activity
+	 * @param property	Block set property name
+	 * @param word		Answer word
+	 * @throws BlockCreateException		Can not create new block set
+	 * @throws LoadPropertyException	Can not read property file
 	 */
-	public BlockSetFactory(final BlockColorSet colorSet, final CharacterSet characterSet) {
+	public BlockSetFactory (final Activity activity, final String property, final String word) throws BlockCreateException, LoadPropertyException {
+		BlockColorSet colorSet = new BlockColorSet(activity.getResources());
+		CharacterSet characterSet = new CharacterSet(activity.getResources());
 		this.colorSet = colorSet;
 		this.characterSet = characterSet;
+		readJson(property, activity);
+		registerCharacterPattern(word);
 	}
 	
 	/**

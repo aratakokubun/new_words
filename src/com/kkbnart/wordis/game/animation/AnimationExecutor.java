@@ -5,7 +5,7 @@ import java.util.Set;
 
 import android.graphics.Canvas;
 
-import com.kkbnart.wordis.game.GameAction;
+import com.kkbnart.wordis.game.GameStatus;
 import com.kkbnart.wordis.game.board.Board;
 
 /**
@@ -22,8 +22,12 @@ public class AnimationExecutor {
 	 * 
 	 * @param animation New animation
 	 */
-	public void assignAnimation(GameAnimation animation) {
-		this.animations.add(animation);
+	public void assignAnimation(final GameAnimation animation) {
+		animations.add(animation);
+	}
+	
+	public void deleteAnimation(final GameAnimation animation) {
+		animations.remove(animation);
 	}
 
 	/**
@@ -34,9 +38,9 @@ public class AnimationExecutor {
 	 * @param board		Current board
 	 * @return action	Game action to be taken after animation
 	 */
-	public GameAction execute(final Canvas canvas, final Board board) {
+	public GameStatus execute(final Canvas canvas, final Board board) {
 		// Action to be taken after animation (default None)
-		GameAction action = GameAction.NONE;
+		GameStatus action = GameStatus.NONE;
 		Set<GameAnimation> removeAnimations = new HashSet<GameAnimation>();
 		for (GameAnimation animation : animations) {
 			if (!animation.executeAnimationUpdate(canvas, board)) {

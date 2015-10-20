@@ -108,14 +108,14 @@ public final class Game_
             }
         }
         {
-            View view = hasViews.findViewById(id.counterClockwiseButton);
+            View view = hasViews.findViewById(id.downButton);
             if (view!= null) {
                 view.setOnClickListener(new OnClickListener() {
 
 
                     @Override
                     public void onClick(View view) {
-                        Game_.this.counterClockwiseButtonClick(view);
+                        Game_.this.downButtonClick(view);
                     }
 
                 }
@@ -138,14 +138,14 @@ public final class Game_
             }
         }
         {
-            View view = hasViews.findViewById(id.downButton);
+            View view = hasViews.findViewById(id.counterClockwiseButton);
             if (view!= null) {
                 view.setOnClickListener(new OnClickListener() {
 
 
                     @Override
                     public void onClick(View view) {
-                        Game_.this.downButtonClick(view);
+                        Game_.this.counterClockwiseButtonClick(view);
                     }
 
                 }
@@ -182,7 +182,7 @@ public final class Game_
                 );
             }
         }
-        initGameManager();
+        setupView();
     }
 
     public static class IntentBuilder_
