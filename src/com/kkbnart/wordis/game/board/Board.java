@@ -192,6 +192,13 @@ public class Board {
 			blocks.remove(id);
 		}
 	}
+	
+	/**
+	 * Clear all blocks. <br>
+	 */
+	public void clearBlocks() {
+		blocks.clear();
+	}
 		
 	/**
 	 * Draw block images. <br>
@@ -219,6 +226,7 @@ public class Board {
 		for (int i = 0; i < blocks.size(); i++) {
 			final Block b = blocks.get(blocks.keyAt(i));
 			final int row = (collisionRow-1) - ((int)b.getY() - collisionY);
+			System.out.println("cr:"+collisionRow + ", by:" + b.getY() + ", cy:" + collisionY);
 			final int column = (int)b.getX() - collisionX;
 			matrix[row][column] = b.clone();
 		}

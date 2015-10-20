@@ -2,7 +2,7 @@ package com.kkbnart.wordis.game;
 
 import android.view.MotionEvent;
 
-public interface IGame {
+public interface IGameActivity {
 	/**
 	 * Change parameters depending on surface size change. <br>
 	 * 

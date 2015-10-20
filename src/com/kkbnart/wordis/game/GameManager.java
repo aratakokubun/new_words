@@ -2,12 +2,12 @@ package com.kkbnart.wordis.game;
 
 import java.util.Set;
 
-import android.app.Activity;
+import android.os.Handler;
+import android.os.Message;
 import android.view.MotionEvent;
 
 import com.kkbnart.wordis.exception.BlockCreateException;
 import com.kkbnart.wordis.exception.InvalidParameterException;
-import com.kkbnart.wordis.exception.LoadPropertyException;
 import com.kkbnart.wordis.exception.NoAnimationException;
 import com.kkbnart.wordis.game.animation.AnimationManager;
 import com.kkbnart.wordis.game.animation.GameAnimationType;
@@ -15,11 +15,12 @@ import com.kkbnart.wordis.game.board.Board;
 import com.kkbnart.wordis.game.board.NextBlocks;
 import com.kkbnart.wordis.game.board.OperatedBlocks;
 import com.kkbnart.wordis.game.object.Block;
-import com.kkbnart.wordis.game.object.BlockColorSet;
 import com.kkbnart.wordis.game.object.BlockIdFactory;
 import com.kkbnart.wordis.game.object.BlockSetFactory;
-import com.kkbnart.wordis.game.object.CharacterSet;
 import com.kkbnart.wordis.game.object.Collision;
+import com.kkbnart.wordis.game.player.PlayerStatus;
+import com.kkbnart.wordis.game.player.PlayerStatusMap;
+import com.kkbnart.wordis.game.player.WordisPlayer;
 import com.kkbnart.wordis.game.rule.DeleteBlockLine;
 
 public class GameManager implements Runnable {
@@ -35,14 +36,33 @@ public class GameManager implements Runnable {
 	private BlockSetFactory blockSetFactory = null;
 	// Manage and execute animations
 	private AnimationManager animationManager = null;
-	// Flag to continue game
-	private boolean continueGame = true;
+	// Players' status
+	private PlayerStatusMap playerStatusMap = new PlayerStatusMap();
+	
+	// Interface called on terminating game
+	IGameTerminate gameTerminate;
+	
+	// Game thread
+	Thread gameThread = null;
+	
+	// Game type
+	private GameType gameType;
+	// Game status
+	private GameStatus gameStatus;
 	
 	// Sleep time [ms]
 	private static final long SLEEP = 30;
 	
+	public GameManager(IGameTerminate gameTerminate) {
+		this.gameTerminate = gameTerminate;
+	}
+	
 	public void setGameSurfaceView(final GameSurfaceView gsv) {
 		this.gsv = gsv;
+	}
+	
+	public void setBlockSetFactory(final BlockSetFactory factory) {
+		this.blockSetFactory = factory;
 	}
 	
 	/**
@@ -50,29 +70,44 @@ public class GameManager implements Runnable {
 	 * 
 	 * @throws BlockCreateException Can not create blocks
 	 */
-	public void startGame() throws BlockCreateException {
-		// Set next prepared to start
+	public void startGame(final GameType type) throws BlockCreateException {
+		// Set next blocks prepared to start
 		next.setFactory(blockSetFactory);
 		final GameTypeDefinition gtd = GameTypeDefinition.getInstance();
 		next.initializeBlockSet(gtd.nextSize);
 		operated.setBlocks(next.releaseNextBlocks());
+
+		gameType = type;
+		gameStatus = GameStatus.NONE;
 		
-		continueGame = true;
-		Thread gameThread = new Thread(this);
-		gameThread.start();
+		// TODO
+		// Initialize player status
+		// Player type
+		final PlayerStatus status = new PlayerStatus(0, "temp", 0, 0, 0, 0, 0, 0);
+		playerStatusMap.put(WordisPlayer.MY_PLAYER, status);
+		
+		// Refresh board
+		board.clearBlocks();
+
+		// Start game thread
+		if (gameThread == null) {
+			gameThread = new Thread(this);
+		}
+		if (!gameThread.isAlive()) {
+			gameThread.start();
+		}
 	}
 	
 	/**
 	 * Change view size. <br>
 	 * 
-	 * @param activity	Game Activity
 	 * @param width		View width
 	 * @param height	View height
 	 * @throws BlockCreateException			Can not create new set of blocks
 	 * @throws InvalidParameterException 	Invalid parameters are specified
 	 * @throws NoAnimationException 
 	 */
-	public void surfaceSizeChanged(final Activity activity, final int width, final int height) throws BlockCreateException, InvalidParameterException, NoAnimationException {
+	public void surfaceSizeChanged(final int width, final int height) throws BlockCreateException, InvalidParameterException, NoAnimationException {
 		final GameTypeDefinition gtd = GameTypeDefinition.getInstance();
 		
 		// Change board size depends on view size
@@ -106,27 +141,10 @@ public class GameManager implements Runnable {
 		// FIXME
 		// Create animation manager
 		if (animationManager == null) {
-			animationManager = new AnimationManager(WordisPlayer.PLAYER1, gtd.boardCol, gtd.boardRow, w, h);
+			animationManager = new AnimationManager(WordisPlayer.MY_PLAYER, gtd.boardCol, gtd.boardRow, w, h);
 		} else {
-			animationManager.onSurfaceChange(WordisPlayer.PLAYER1, gtd.boardCol, gtd.boardRow, w, h);
+			animationManager.onSurfaceChange(WordisPlayer.MY_PLAYER, gtd.boardCol, gtd.boardRow, w, h);
 		}
-	}
-	
-	/**
-	 * Create block set factory depends on {@code word}. <br>
-	 * 
-	 * @param activity	Activity to get resources
-	 * @throws BlockCreateException  Can not create new block
-	 * @throws LoadPropertyException Can not read property file
-	 */
-	public void createBlockSetFactory(final Activity activity, final String property, final String word) throws BlockCreateException, LoadPropertyException {
-		if (blockSetFactory == null) {
-			BlockColorSet bcs = new BlockColorSet(activity.getResources());
-			CharacterSet cs = new CharacterSet(activity.getResources());
-			blockSetFactory = new BlockSetFactory(bcs, cs);
-			blockSetFactory.readJson(property, activity);
-		}
-		blockSetFactory.registerCharacterPattern(word);
 	}
 	
 	@Override
@@ -140,8 +158,8 @@ public class GameManager implements Runnable {
 				try {
 					Thread.sleep(sleepTime);
 				} catch (InterruptedException e) {
-					// TODO
-					// Handle exception
+					finishGame();
+					return;
 				}
 				elapsedTime = System.currentTimeMillis() - prevTime;
 			}
@@ -151,8 +169,7 @@ public class GameManager implements Runnable {
 			invokeMainProcess();
 		}
 		
-		// TODO
-		// End of the game
+		finishGame();
 	}
 	
 	/**
@@ -162,7 +179,7 @@ public class GameManager implements Runnable {
 	 * 		   false : terminate game <br>
 	 */
 	private boolean continueGame() {
-		return continueGame;
+		return gameStatus != GameStatus.GAMEFINISH;
 	}
 	
 	/**
@@ -170,7 +187,7 @@ public class GameManager implements Runnable {
 	 * Synchronized because update is conflicted with user operation.
 	 */
 	private synchronized void invokeMainProcess() {
-		if (!checkIsNull()) {
+		if (!checkIsNull() && gameStatus != GameStatus.PAUSE) {
 			if (animationManager.hasAnimation()) {
 				updateAnimation();
 			} else {
@@ -190,17 +207,7 @@ public class GameManager implements Runnable {
 	 * Update view animation and take game actions after the animation. <br>
 	 */
 	private void updateAnimation() {
-		GameAction action = gsv.drawAnimation(animationManager, board);
-		switch (action) {
-		case GAMEFINISH:
-			continueGame = false;
-			break;
-		case PAUSE:
-			// TODO
-			break;
-		default:
-			break;
-		}
+		gameStatus = gsv.drawAnimation(animationManager, board);
 	}
 	
 	/**
@@ -260,6 +267,67 @@ public class GameManager implements Runnable {
 	private boolean checkIsNull() {
 		return board == null || operated == null || next == null || gsv == null
 				|| blockSetFactory == null || animationManager == null;
+	}
+	
+	/**
+	 * Process called on finish game
+	 */
+	private void finishGame() {
+		handler.sendEmptyMessage(FINISH_GAME);
+		gameThread = null;
+	}
+	
+	/**
+	 * To forcefully finish game from outside, interrupt thread. <br>
+	 */
+	public void interruptGame() {
+		if (gameThread != null && gameThread.isAlive()) {
+			gameThread.interrupt();
+			gameThread = null;
+		}
+	}
+	
+	// Handler to inform action from game loop thread
+	private static final int FINISH_GAME = 0;
+	private Handler handler = new Handler(new Handler.Callback() {
+		@Override
+		public boolean handleMessage(Message msg) {
+			switch (msg.what) {
+			case FINISH_GAME:
+				handleFinishGame();
+				return true;
+			}
+			return false;
+		}
+	});
+	
+	private void handleFinishGame() {
+		switch (gameType) {
+		case TEST:
+		case PRACTICE:
+		case SINGLE:
+			final PlayerStatus myStatus = playerStatusMap.get(WordisPlayer.MY_PLAYER);
+			gameTerminate.terminateSingle(myStatus);
+			break;
+		case VS_CPU:
+			// TODO
+			break;
+		case MULTI_NET:
+			// TODO
+			break;
+		}
+	}
+	
+	public void suspendGame() {
+		gameStatus = GameStatus.PAUSE;
+	}
+	
+	public void resumeGame() {
+		gameStatus = GameStatus.NONE;
+	}
+	
+	public GameType getGameType() {
+		return gameType;
 	}
 
 	/**

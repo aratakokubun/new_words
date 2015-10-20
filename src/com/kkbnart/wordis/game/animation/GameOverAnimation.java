@@ -10,10 +10,10 @@ import android.util.Log;
 
 import com.kkbnart.wordis.Constants;
 import com.kkbnart.wordis.exception.FontNotExistException;
-import com.kkbnart.wordis.game.GameAction;
-import com.kkbnart.wordis.game.WordisPlayer;
+import com.kkbnart.wordis.game.GameStatus;
 import com.kkbnart.wordis.game.board.Board;
 import com.kkbnart.wordis.game.object.Block;
+import com.kkbnart.wordis.game.player.WordisPlayer;
 import com.kkbnart.wordis.util.WordisFontTypes;
 import com.kkbnart.wordis.util.WordisFonts;
 
@@ -26,16 +26,16 @@ public class GameOverAnimation extends GameAnimation {
 	private static final String TAG = GameOverAnimation.class.getSimpleName();
 	
 	// Block collapse
-	private static final float minSpeed = 0.005f;
-	private static final float maxSpeed = 0.015f;
+	private static final float minSpeed = 0.012f;
+	private static final float maxSpeed = 0.02f;
 	private float[] collapseSpeed = null;
 	private AnimationTime collapseTime;
 	
 	// Game over text
 	private static final Map<WordisPlayer, TextPositionRate> textPositionMap = new HashMap<WordisPlayer, TextPositionRate>() {
 		private static final long serialVersionUID = 5283089089129303164L;
-		{put(WordisPlayer.PLAYER1, new TextPositionRate(0.5f, 0.4f, 80.f));}
-		{put(WordisPlayer.PLAYER2, new TextPositionRate(0.8f, 0.4f, 80.f));}
+		{put(WordisPlayer.MY_PLAYER, new TextPositionRate(0.5f, 0.4f, 80.f));}
+		{put(WordisPlayer.OPP_PLAYER, new TextPositionRate(0.8f, 0.4f, 80.f));}
 		{put(WordisPlayer.COM, new TextPositionRate(0.7f, 0.4f, 80.f));}
 	};
 	private float textX, textY;
@@ -43,7 +43,7 @@ public class GameOverAnimation extends GameAnimation {
 	private String gameOverText = "LOSE";
 	private AnimationTime textTime;
 
-	public GameOverAnimation(final long animationTime, final GameAction postAction, 
+	public GameOverAnimation(final long animationTime, final GameStatus postAction, 
 			final WordisPlayer player, final int col, final int row, final int width, final int height) {
 		super(animationTime, postAction);
 		setParameters(player, col, row, width, height);
@@ -52,7 +52,7 @@ public class GameOverAnimation extends GameAnimation {
 	}
 
 	/**
-	 * Initialize collapse speed row array. <br>
+	 * Set collapse speed row array. <br>
 	 * 
 	 * @param col Board column
 	 */
@@ -63,6 +63,13 @@ public class GameOverAnimation extends GameAnimation {
 		setAnimationSpeed();
 	}
 	
+	/**
+	 * Set game over text position for the specified player.
+	 * 
+	 * @param player	Specified player
+	 * @param width		
+	 * @param height
+	 */
 	private void setTextPosition(final WordisPlayer player, final int width, final int height) {
 		TextPositionRate rate = textPositionMap.get(player);
 		textX = rate.x * width;
