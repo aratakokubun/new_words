@@ -1,7 +1,8 @@
 package com.kkbnart.wordis.game.animation;
 
 public enum GameAnimationType {
-	GAME_OVER (0),
+	GAME_START (0),
+	GAME_OVER (1),
 	;
 	
 	private int id;

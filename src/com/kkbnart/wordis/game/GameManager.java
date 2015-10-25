@@ -47,10 +47,13 @@ public class GameManager implements GameThreadManager {
 	private GameType gameType;
 	// Game status
 	private GameStatus gameStatus;
+	// Wordis player type
+	private WordisPlayer player;
 	
-	public GameManager(IGameTerminate gameTerminate) {
+	public GameManager(IGameTerminate gameTerminate, final WordisPlayer player) {
 		this.gameTerminate = gameTerminate;
 		this.gameThread = new GameThread(this);
+		this.player = WordisPlayer.MY_PLAYER;
 	}
 	
 	public void setGameSurfaceView(final GameSurfaceView gsv) {
@@ -65,8 +68,9 @@ public class GameManager implements GameThreadManager {
 	 * Set parameters to start game. <br>
 	 * 
 	 * @throws BlockCreateException Can not create blocks
+	 * @throws NoAnimationException Can not add animation 
 	 */
-	public void startGame(final GameType type) throws BlockCreateException {
+	public void startGame(final GameType type) throws BlockCreateException, NoAnimationException {
 		// Set next blocks prepared to start
 		next.setFactory(blockSetFactory);
 		final GameTypeDefinition gtd = GameTypeDefinition.getInstance();
@@ -78,13 +82,15 @@ public class GameManager implements GameThreadManager {
 		
 		// TODO
 		// Initialize player status
-		// Player type
 		final PlayerStatus status = new PlayerStatus(0, "temp", 0, 0, 0, 0, 0, 0);
-		playerStatusMap.put(WordisPlayer.MY_PLAYER, status);
+		playerStatusMap.put(player, status);
 		
 		// Refresh board
 		board.clearBlocks();
 
+		// Set start animation
+		animationManager.addAnimation(GameAnimationType.GAME_START);
+		
 		// Start game thread
 		gameThread.startThread();
 	}
@@ -129,12 +135,11 @@ public class GameManager implements GameThreadManager {
 			next.setCoordinate(gtd.nextX, gtd.nextY, gtd.nextMarginX, gtd.nextMarginY);
 		}
 		
-		// FIXME
 		// Create animation manager
 		if (animationManager == null) {
-			animationManager = new AnimationManager(WordisPlayer.MY_PLAYER, gtd.boardCol, gtd.boardRow, w, h);
+			animationManager = new AnimationManager(player, gtd.boardCol, gtd.boardRow, w, h);
 		} else {
-			animationManager.onSurfaceChange(WordisPlayer.MY_PLAYER, gtd.boardCol, gtd.boardRow, w, h);
+			animationManager.onSurfaceChange(player, gtd.boardCol, gtd.boardRow, w, h);
 		}
 	}
 	
@@ -200,6 +205,8 @@ public class GameManager implements GameThreadManager {
 	 */
 	private void updateBlocks() throws BlockCreateException, NoAnimationException  {
 		if (Collision.isCollided(board, operated)) {
+			// TODO
+			// If versus remote player, send gameover message to server
 			// If operated block is collided to walls or other blocks, game over!!
 			animationManager.addAnimation(GameAnimationType.GAME_OVER);
 		} else if (Collision.isContacted(board, operated)) {

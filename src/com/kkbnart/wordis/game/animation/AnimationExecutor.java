@@ -44,7 +44,7 @@ public class AnimationExecutor {
 		Set<GameAnimation> removeAnimations = new HashSet<GameAnimation>();
 		for (GameAnimation animation : animations) {
 			if (!animation.executeAnimationUpdate(canvas, board)) {
-				// Update action
+				// Override action
 				action = action.compare(animation.getPostAction());
 				removeAnimations.add(animation);
 			}

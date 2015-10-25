@@ -32,6 +32,7 @@ import com.kkbnart.wordis.game.dialog.GameMenuDialog;
 import com.kkbnart.wordis.game.dialog.SingleGameFinishDialog;
 import com.kkbnart.wordis.game.object.BlockSetFactory;
 import com.kkbnart.wordis.game.player.PlayerStatus;
+import com.kkbnart.wordis.game.player.WordisPlayer;
 import com.kkbnart.wordis.game.rule.MoveAmount;
 import com.kkbnart.wordis.game.util.Direction;
 import com.kkbnart.wordis.menu.Menu;
@@ -57,7 +58,9 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		manager = new GameManager(this);
+		// FIXME
+		// These variables are passed from menu with static class or Intent
+		manager = new GameManager(this, WordisPlayer.MY_PLAYER);
 		
 		// FIXME
 		// These variables are passed from menu with static class or Intent
@@ -125,7 +128,7 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 	private void startGame() {
 		try {
 			manager.startGame(type);
-		} catch (BlockCreateException e) {
+		} catch (BlockCreateException | NoAnimationException e) {
 			forceFinishGame(e);
 		}
 	}

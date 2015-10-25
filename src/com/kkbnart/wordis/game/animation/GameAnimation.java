@@ -33,6 +33,10 @@ public abstract class GameAnimation {
 		this.animationTime = animationTime;
 	}
 	
+	public long getAnimationTime() {
+		return animationTime;
+	}
+	
 	public void setPriorAction(final GameStatus priorAction) {
 		this.postAction = priorAction;
 	}
@@ -48,8 +52,8 @@ public abstract class GameAnimation {
 	/**
 	 * Get if animation time is over. <br>
 	 * 
-	 * @return	true  : Continue animation
-	 * 			false : Animation time is over
+	 * @return	true  : Continue animation <br>
+	 * 			false : Animation time is over <br>
 	 */
 	private boolean isAnimationContinue() {
 		final long elapsedTime = System.currentTimeMillis() - startTime;
@@ -66,8 +70,8 @@ public abstract class GameAnimation {
 	 * 
 	 * @param canvas	Surface view canvas
 	 * @param board		Current board
-	 * @return	true  : Continue animation
-	 * 			false : Animation time is over
+	 * @return	true  : Continue animation <br>
+	 * 			false : Animation time is over <br>
 	 */
 	public boolean executeAnimationUpdate(final Canvas canvas, final Board board) {
 		final long now = System.currentTimeMillis();

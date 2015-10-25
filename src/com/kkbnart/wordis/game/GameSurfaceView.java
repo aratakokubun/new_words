@@ -69,7 +69,8 @@ public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 	 * @param board				Current board
 	 * @return Game action to be taken after animation
 	 */
-	public GameStatus drawAnimation(final AnimationManager animationManager, final Board board) {
+	public GameStatus drawAnimation(final AnimationManager animationManager,
+			final Board board) {
 		final SurfaceHolder holder = getHolder();
 		Canvas c = null;
 		try {

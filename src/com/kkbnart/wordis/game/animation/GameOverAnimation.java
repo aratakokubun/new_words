@@ -1,8 +1,5 @@
 package com.kkbnart.wordis.game.animation;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -13,12 +10,11 @@ import com.kkbnart.wordis.exception.FontNotExistException;
 import com.kkbnart.wordis.game.GameStatus;
 import com.kkbnart.wordis.game.board.Board;
 import com.kkbnart.wordis.game.object.Block;
-import com.kkbnart.wordis.game.player.WordisPlayer;
 import com.kkbnart.wordis.util.WordisFontTypes;
 import com.kkbnart.wordis.util.WordisFonts;
 
 /**
- * Manage flag, time and movement while game over. <br>
+ * Manage time and movement while game over. <br>
  * 
  * @author kkbnart
  */
@@ -31,50 +27,23 @@ public class GameOverAnimation extends GameAnimation {
 	private float[] collapseSpeed = null;
 	private AnimationTime collapseTime;
 	
-	// Game over text
-	private static final Map<WordisPlayer, TextPositionRate> textPositionMap = new HashMap<WordisPlayer, TextPositionRate>() {
-		private static final long serialVersionUID = 5283089089129303164L;
-		{put(WordisPlayer.MY_PLAYER, new TextPositionRate(0.5f, 0.4f, 80.f));}
-		{put(WordisPlayer.OPP_PLAYER, new TextPositionRate(0.8f, 0.4f, 80.f));}
-		{put(WordisPlayer.COM, new TextPositionRate(0.7f, 0.4f, 80.f));}
-	};
-	private float textX, textY;
-	private float textSize;
+	// Game over text position
+	private TextPositionRate textPosition = new TextPositionRate(0.5f, 0.4f, 80.f);
+	// TODO
+	// Declare in xml
 	private String gameOverText = "LOSE";
 	private AnimationTime textTime;
 
-	public GameOverAnimation(final long animationTime, final GameStatus postAction, 
-			final WordisPlayer player, final int col, final int row, final int width, final int height) {
+	public GameOverAnimation(final long animationTime, final GameStatus postAction, final int col) {
 		super(animationTime, postAction);
-		setParameters(player, col, row, width, height);
+		setAnimationParameters(col);
 		collapseTime = new AnimationTime(10/*ms*/, 3000/*ms*/);
 		textTime 	 = new AnimationTime(1200/*ms*/, 10000/*ms*/);
 	}
 
-	/**
-	 * Set collapse speed row array. <br>
-	 * 
-	 * @param col Board column
-	 */
-	public void setParameters(final WordisPlayer player, final int col, final int row,
-			final int width, final int height) {
-		setTextPosition(player, width, height);
+	public void setAnimationParameters(final int col) {
 		collapseSpeed = new float[col];
 		setAnimationSpeed();
-	}
-	
-	/**
-	 * Set game over text position for the specified player.
-	 * 
-	 * @param player	Specified player
-	 * @param width		
-	 * @param height
-	 */
-	private void setTextPosition(final WordisPlayer player, final int width, final int height) {
-		TextPositionRate rate = textPositionMap.get(player);
-		textX = rate.x * width;
-		textY = rate.y * height;
-		textSize = rate.size;
 	}
 	
 	/**
@@ -107,14 +76,15 @@ public class GameOverAnimation extends GameAnimation {
 	}
 
 	@Override
-	public void drawAnimation(final Canvas canvas, final Board board, final long elapsedTime, final long diffTime) {
+	public void drawAnimation(final Canvas canvas, final Board board,
+			final long elapsedTime, final long diffTime) {
 		// Collapse block
 		if (collapseTime.start < elapsedTime && elapsedTime < collapseTime.end) {
 			showCollapseBlock(canvas, board, diffTime);
 		}
 		// Show text
 		if (textTime.start < elapsedTime && elapsedTime < textTime.end) {
-			showGameOverText(canvas, elapsedTime, diffTime);
+			showGameOverText(canvas, board, elapsedTime, diffTime);
 		}
 	}
 	
@@ -143,10 +113,12 @@ public class GameOverAnimation extends GameAnimation {
 	 * Draw game over text animation. <br>
 	 * 
 	 * @param canvas		Surface view canvas
+	 * @param board			Current board
 	 * @param elapsedTime	Elapsed milli time from start
 	 * @param diffTime		Elapsed milli time from previous animation time
 	 */
-	private void showGameOverText(final Canvas canvas, final long elapsedTime, final long diffTime) {
+	private void showGameOverText(final Canvas canvas, final Board board,
+			final long elapsedTime, final long diffTime) {
 		final Paint paint = new Paint();
 		paint.setColor(Color.YELLOW);
 		try {
@@ -154,6 +126,11 @@ public class GameOverAnimation extends GameAnimation {
 		} catch (FontNotExistException e) {
 			if (Constants.D) Log.e(TAG, "Font is not defined.");
 		}
+		
+		// Set text position and size
+		final float textX = textPosition.x * board.getWidth() + board.getX();
+		final float textY = textPosition.y * board.getHeight() + board.getY();
+		final float textSize = textPosition.size;
 		
 		// Custom text size
 		final float popRate = 1.f + 0.05f*(float)(Math.cos((double)elapsedTime / textTime.getLength() * Math.PI * 20.f));
@@ -170,17 +147,5 @@ public class GameOverAnimation extends GameAnimation {
 		final int xPos = (int)(textX - textWidth / 2.f);
 		final int yPos = (int)(textY - (paint.descent() + paint.ascent()) / 2.f);
 		canvas.drawText(gameOverText, xPos, yPos, paint);
-	}
-	
-	private static class TextPositionRate {
-		public float x;
-		public float y;
-		public float size;
-		
-		public TextPositionRate(final float x, final float y, final float size) {
-			this.x = x;
-			this.y = y;
-			this.size = size;
-		}
 	}
 }

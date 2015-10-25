@@ -120,6 +120,14 @@ public class Board {
 		return y;
 	}
 	
+	public int getWidth() {
+		return width;
+	}
+	
+	public int getHeight() {
+		return height;
+	}
+	
 	/**
 	 * Get area of the board in display layout. <br>
 	 * 
