@@ -37,6 +37,7 @@ public class Menu extends Activity {
 				// TODO
 				// Pass the information of game type
 				startActivity(intent);
+				overridePendingTransition(R.anim.activity_blackout_open, R.anim.activity_blackout_close);
 				finish();
 			}
 		});

@@ -135,6 +135,8 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 		// Pass values to menu
 		Intent intent = new Intent(getApplicationContext(), Menu.class);
 		startActivity(intent);
+		overridePendingTransition(R.anim.activity_blackout_open, R.anim.activity_blackout_close);
+		finish();
 	}
 
 	@Override
