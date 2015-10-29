@@ -16,8 +16,10 @@ public interface GameThreadManager {
 	/**
 	 * Periodical process while game. <br>
 	 * Synchronized because update is conflicted with user operation. <br>
+	 * 
+	 * @param elapsedTime	Elapsed time from previous frame
 	 */
-	public void invokeMainProcess();
+	public void invokeMainProcess(final long elapsedTime);
 
 	/**
 	 * Process called on finish game

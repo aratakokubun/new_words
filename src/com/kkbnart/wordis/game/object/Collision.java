@@ -4,7 +4,7 @@ import android.graphics.RectF;
 import android.util.SparseArray;
 
 import com.kkbnart.wordis.game.board.Board;
-import com.kkbnart.wordis.game.rule.FreeFall;
+import com.kkbnart.wordis.game.rule.Fall;
 
 /**
  * Static class to judge collision
@@ -68,7 +68,7 @@ public class Collision {
 	 * @return Is contacted or not
 	 */
 	private static boolean isContacted(final Board board, final Block b1, final Block b2) {
-		final float moveX = FreeFall.getInstance().getXPerFrame(), moveY = FreeFall.getInstance().getYPerFrame();
+		final float moveX = Fall.getInstance().getXPerMSec(), moveY = Fall.getInstance().getYPerMSec();
 		// Contacted with x side
 		if (Math.abs(moveX) > 0.f) {
 			if (   Math.abs(b1.getX()-b2.getX()) < Math.abs(moveX) + 1.f
@@ -99,7 +99,7 @@ public class Collision {
 	 * @return Is contacted or not
 	 */
 	private static boolean isContacted(final Board board, final Block b) {
-		final float moveX = FreeFall.getInstance().getXPerFrame(), moveY = FreeFall.getInstance().getYPerFrame();
+		final float moveX = Fall.getInstance().getXPerMSec(), moveY = Fall.getInstance().getYPerMSec();
 		final RectF rect = board.getCollisionRect();
 		return (moveX < 0.f && Math.abs(rect.left-b.getX()) 	< Math.abs(moveX))
 			|| (moveY < 0.f && Math.abs(rect.top-b.getY()) 		< Math.abs(moveY))

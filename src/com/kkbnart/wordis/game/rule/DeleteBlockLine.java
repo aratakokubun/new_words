@@ -223,6 +223,7 @@ public class DeleteBlockLine {
 		} else {
 			// TODO
 			// change here to operate special string
+			// For example, "*" string for any string item
 			return b.getCharacterString();
 		}
 	}

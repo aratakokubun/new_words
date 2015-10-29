@@ -1,4 +1,4 @@
-package com.kkbnart.wordis.game.board;
+package com.kkbnart.wordis.game.object;
 
 import java.util.ArrayDeque;
 import java.util.Iterator;
@@ -7,9 +7,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 
 import com.kkbnart.wordis.exception.BlockCreateException;
-import com.kkbnart.wordis.game.object.Block;
-import com.kkbnart.wordis.game.object.BlockSet;
-import com.kkbnart.wordis.game.object.BlockSetFactory;
+import com.kkbnart.wordis.game.board.Board;
 
 
 /**

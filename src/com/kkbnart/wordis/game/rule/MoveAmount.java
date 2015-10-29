@@ -88,9 +88,12 @@ public class MoveAmount {
 
 			// Update free fall
 			final JSONObject freeFallObject = property.getJSONObject("freeFall");
-			final float xPerFrame = (float)freeFallObject.getDouble("x");
-			final float yPerFrame = (float)freeFallObject.getDouble("y");
-			FreeFall.getInstance().setPerFrame(xPerFrame, yPerFrame);
+			final float xPerMSec = (float)freeFallObject.getDouble("x");
+			final float yPerMSec = (float)freeFallObject.getDouble("y");
+			Fall.getInstance().setFallPerMSec(xPerMSec, yPerMSec);
+			final float axPerMSec = (float)freeFallObject.getDouble("ax");
+			final float ayPerMSec = (float)freeFallObject.getDouble("ay");
+			Fall.getInstance().setAccellPerMSec(axPerMSec, ayPerMSec);
 			
 			// Add move amount of each direction
 			final JSONObject operateObject = property.getJSONObject("operate");

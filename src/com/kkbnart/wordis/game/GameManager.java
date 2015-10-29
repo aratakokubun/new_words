@@ -10,12 +10,12 @@ import com.kkbnart.wordis.exception.NoAnimationException;
 import com.kkbnart.wordis.game.animation.AnimationManager;
 import com.kkbnart.wordis.game.animation.GameAnimationType;
 import com.kkbnart.wordis.game.board.Board;
-import com.kkbnart.wordis.game.board.NextBlocks;
-import com.kkbnart.wordis.game.board.OperatedBlocks;
 import com.kkbnart.wordis.game.object.Block;
 import com.kkbnart.wordis.game.object.BlockIdFactory;
 import com.kkbnart.wordis.game.object.BlockSetFactory;
 import com.kkbnart.wordis.game.object.Collision;
+import com.kkbnart.wordis.game.object.NextBlocks;
+import com.kkbnart.wordis.game.object.OperatedBlocks;
 import com.kkbnart.wordis.game.player.PlayerStatus;
 import com.kkbnart.wordis.game.player.PlayerStatusMap;
 import com.kkbnart.wordis.game.player.WordisPlayer;
@@ -153,14 +153,14 @@ public class GameManager implements GameThreadManager {
 	/**
 	 * @see GameThreadManager#invokeMainProcess()
 	 */
-	public synchronized void invokeMainProcess() {
+	public synchronized void invokeMainProcess(final long elapsedMSec) {
 		if (!checkIsNull() && gameStatus != GameStatus.PAUSE) {
 			if (animationManager.hasAnimation()) {
 				updateAnimation();
 			} else {
 				// Do update and draw while not animation
 				try {
-					updateBlocks();
+					updateBlocks(elapsedMSec);
 				} catch (BlockCreateException | NoAnimationException e) {
 					// TODO
 					// Handle exception with showing some message and terminate game.
@@ -203,7 +203,7 @@ public class GameManager implements GameThreadManager {
 	 * @throws BlockCreateException Can not create new block set
 	 * @throws NoAnimationException Specified animation is not registered 
 	 */
-	private void updateBlocks() throws BlockCreateException, NoAnimationException  {
+	private void updateBlocks(final long elapsedMSec) throws BlockCreateException, NoAnimationException  {
 		if (Collision.isCollided(board, operated)) {
 			// TODO
 			// If versus remote player, send gameover message to server
@@ -221,7 +221,7 @@ public class GameManager implements GameThreadManager {
 			// Create animation class and raise flags in that class
 		} else {
 			// Automatically update block
-			operated.autoUpdate();
+			operated.autoUpdate(elapsedMSec);
 		}
 	}
 	
