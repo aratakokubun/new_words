@@ -3,7 +3,7 @@ package com.kkbnart.wordis.game.rule;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.kkbnart.wordis.game.object.Block;
+import com.kkbnart.wordis.game.object.block.Block;
 
 public class DeleteBlockLine {
 	// Substitute string for a blank cell

@@ -12,8 +12,8 @@ import android.view.SurfaceView;
 
 import com.kkbnart.wordis.game.animation.AnimationManager;
 import com.kkbnart.wordis.game.board.Board;
-import com.kkbnart.wordis.game.object.NextBlocks;
-import com.kkbnart.wordis.game.object.OperatedBlocks;
+import com.kkbnart.wordis.game.object.block.NextBlocks;
+import com.kkbnart.wordis.game.object.block.OperatedBlocks;
 
 public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callback {
 	private static final String TAG = GameSurfaceView.class.getSimpleName();

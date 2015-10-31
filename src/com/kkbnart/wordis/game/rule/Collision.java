@@ -1,10 +1,11 @@
-package com.kkbnart.wordis.game.object;
+package com.kkbnart.wordis.game.rule;
 
 import android.graphics.RectF;
 import android.util.SparseArray;
 
 import com.kkbnart.wordis.game.board.Board;
-import com.kkbnart.wordis.game.rule.Fall;
+import com.kkbnart.wordis.game.object.block.Block;
+import com.kkbnart.wordis.game.object.block.BlockSet;
 
 /**
  * Static class to judge collision

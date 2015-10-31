@@ -8,17 +8,19 @@ import com.kkbnart.wordis.exception.BlockCreateException;
 import com.kkbnart.wordis.exception.InvalidParameterException;
 import com.kkbnart.wordis.exception.NoAnimationException;
 import com.kkbnart.wordis.game.animation.AnimationManager;
+import com.kkbnart.wordis.game.animation.FreeFallAnimation;
+import com.kkbnart.wordis.game.animation.GameAnimationFactory;
 import com.kkbnart.wordis.game.animation.GameAnimationType;
 import com.kkbnart.wordis.game.board.Board;
-import com.kkbnart.wordis.game.object.Block;
-import com.kkbnart.wordis.game.object.BlockIdFactory;
-import com.kkbnart.wordis.game.object.BlockSetFactory;
-import com.kkbnart.wordis.game.object.Collision;
-import com.kkbnart.wordis.game.object.NextBlocks;
-import com.kkbnart.wordis.game.object.OperatedBlocks;
+import com.kkbnart.wordis.game.object.block.Block;
+import com.kkbnart.wordis.game.object.block.BlockIdFactory;
+import com.kkbnart.wordis.game.object.block.BlockSetFactory;
+import com.kkbnart.wordis.game.object.block.NextBlocks;
+import com.kkbnart.wordis.game.object.block.OperatedBlocks;
 import com.kkbnart.wordis.game.player.PlayerStatus;
 import com.kkbnart.wordis.game.player.PlayerStatusMap;
 import com.kkbnart.wordis.game.player.WordisPlayer;
+import com.kkbnart.wordis.game.rule.Collision;
 import com.kkbnart.wordis.game.rule.DeleteBlockLine;
 
 public class GameManager implements GameThreadManager {
@@ -52,6 +54,8 @@ public class GameManager implements GameThreadManager {
 	
 	public GameManager(IGameTerminate gameTerminate, final WordisPlayer player) {
 		this.gameTerminate = gameTerminate;
+		// FIXME
+		// With two players or coms, share thread
 		this.gameThread = new GameThread(this);
 		this.player = WordisPlayer.MY_PLAYER;
 	}
@@ -218,7 +222,10 @@ public class GameManager implements GameThreadManager {
 			deleteBlocks();
 			// TODO
 			// Set animation
-			// Create animation class and raise flags in that class
+			GameAnimationFactory factory = animationManager.getAnimationFactory();
+			FreeFallAnimation animation = (FreeFallAnimation)factory.create(GameAnimationType.BLOCK_FALL);
+			animation.setFallingBlocks(board);
+			animationManager.addAnimation(animation);
 		} else {
 			// Automatically update block
 			operated.autoUpdate(elapsedMSec);

@@ -8,8 +8,8 @@ import android.graphics.RectF;
 import android.util.SparseArray;
 
 import com.kkbnart.wordis.exception.InvalidParameterException;
-import com.kkbnart.wordis.game.object.Block;
-import com.kkbnart.wordis.game.object.BlockSet;
+import com.kkbnart.wordis.game.object.block.Block;
+import com.kkbnart.wordis.game.object.block.BlockSet;
 
 /**
  * Board to contain all settled blocks. <br>
@@ -28,7 +28,7 @@ public class Board {
 	private int collisionColumn, collisionRow;
 	// Blocks which the board contains
 	private SparseArray<Block> blocks = new SparseArray<Block>();
-
+	
 	/**
 	 * Constructor with specifying area, size and blocks. <br>
 	 * 
@@ -234,7 +234,6 @@ public class Board {
 		for (int i = 0; i < blocks.size(); i++) {
 			final Block b = blocks.get(blocks.keyAt(i));
 			final int row = (collisionRow-1) - ((int)b.getY() - collisionY);
-			System.out.println("cr:"+collisionRow + ", by:" + b.getY() + ", cy:" + collisionY);
 			final int column = (int)b.getX() - collisionX;
 			matrix[row][column] = b.clone();
 		}

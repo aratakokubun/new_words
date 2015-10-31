@@ -1,4 +1,6 @@
-package com.kkbnart.wordis.game.object;
+package com.kkbnart.wordis.game.object.block;
+
+import com.kkbnart.wordis.game.object.color.ColorDefinition;
 
 import android.content.res.Resources;
 import android.graphics.BitmapFactory;

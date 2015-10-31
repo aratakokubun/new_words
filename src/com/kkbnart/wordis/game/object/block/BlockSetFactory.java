@@ -1,4 +1,4 @@
-package com.kkbnart.wordis.game.object;
+package com.kkbnart.wordis.game.object.block;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -16,6 +16,8 @@ import com.kkbnart.utils.FileIOUtils;
 import com.kkbnart.wordis.Constants;
 import com.kkbnart.wordis.exception.BlockCreateException;
 import com.kkbnart.wordis.exception.LoadPropertyException;
+import com.kkbnart.wordis.game.object.character.Character;
+import com.kkbnart.wordis.game.object.character.CharacterSet;
 
 
 /**

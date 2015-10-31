@@ -33,6 +33,8 @@ public class GameAnimationFactory {
 				/* animation time= */5000, GameStatus.GAMEFINISH, col));
 		setAnimation(GameAnimationType.GAME_START, new GameStartAnimation(
 				/* animation time= */3000, GameStatus.NONE));
+		setAnimation(GameAnimationType.BLOCK_FALL, new FreeFallAnimation(
+				/* animation time= */0, GameStatus.NONE));
 	}
 	
 	/**

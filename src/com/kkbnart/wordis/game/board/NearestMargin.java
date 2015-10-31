@@ -2,8 +2,8 @@ package com.kkbnart.wordis.game.board;
 
 import android.graphics.RectF;
 
-import com.kkbnart.wordis.game.object.Block;
-import com.kkbnart.wordis.game.object.BlockSet;
+import com.kkbnart.wordis.game.object.block.Block;
+import com.kkbnart.wordis.game.object.block.BlockSet;
 
 /**
  * Find the nearest block or board boarder for the specified direction. <br>

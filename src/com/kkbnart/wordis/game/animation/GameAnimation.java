@@ -55,7 +55,7 @@ public abstract class GameAnimation {
 	 * @return	true  : Continue animation <br>
 	 * 			false : Animation time is over <br>
 	 */
-	private boolean isAnimationContinue() {
+	protected boolean isAnimationContinue() {
 		final long elapsedTime = System.currentTimeMillis() - startTime;
 		if (elapsedTime > animationTime) {
 			enabled = false;

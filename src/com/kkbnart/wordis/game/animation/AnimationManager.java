@@ -57,6 +57,25 @@ public class AnimationManager {
 	}
 	
 	/**
+	 * Add created animation. <br>
+	 * 
+	 * @param animation Created game animation
+	 */
+	public void addAnimation(final GameAnimation animation) {
+		animationExecutor.assignAnimation(animation);
+	}
+	
+	/**
+	 * Get animation factory to create new animation and set it to this manager. <br>
+	 * <b> Do not use reuse factory object. Dispose it immediately after create animations.</b> <br>
+	 * 
+	 * @return Game animation factory
+	 */
+	public GameAnimationFactory getAnimationFactory () {
+		return factory;
+	}
+	
+	/**
 	 * On surface touched while animation. <br>
 	 * 
 	 * @param event Touch event
