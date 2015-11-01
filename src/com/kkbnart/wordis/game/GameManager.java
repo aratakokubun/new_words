@@ -162,7 +162,7 @@ public class GameManager implements GameThreadManager {
 			if (animationManager.hasAnimation()) {
 				updateAnimation();
 			} else {
-				// Do update and draw while not animation
+				// Update and draw blocks while not animation
 				try {
 					updateBlocks(elapsedMSec);
 				} catch (BlockCreateException | NoAnimationException e) {
@@ -198,7 +198,7 @@ public class GameManager implements GameThreadManager {
 	 * Update view animation and take game actions after the animation. <br>
 	 */
 	private void updateAnimation() {
-		gameStatus = gsv.drawAnimation(animationManager, board);
+		gameStatus = gsv.drawAnimation(animationManager, board, next);
 	}
 	
 	/**
@@ -208,9 +208,11 @@ public class GameManager implements GameThreadManager {
 	 * @throws NoAnimationException Specified animation is not registered 
 	 */
 	private void updateBlocks(final long elapsedMSec) throws BlockCreateException, NoAnimationException  {
+		// FIXME
+		// Change game over condition
 		if (Collision.isCollided(board, operated)) {
 			// TODO
-			// If versus remote player, send gameover message to server
+			// If versus remote player, send game over message to server
 			// If operated block is collided to walls or other blocks, game over!!
 			animationManager.addAnimation(GameAnimationType.GAME_OVER);
 		} else if (Collision.isContacted(board, operated)) {
@@ -219,13 +221,28 @@ public class GameManager implements GameThreadManager {
 			operated.setBlocks(next.releaseNextBlocks());
 			// TODO
 			// Delete lines
-			deleteBlocks();
+			final boolean isDeleteOccurred = deleteBlocks();
 			// TODO
 			// Set animation
 			GameAnimationFactory factory = animationManager.getAnimationFactory();
 			FreeFallAnimation animation = (FreeFallAnimation)factory.create(GameAnimationType.BLOCK_FALL);
-			animation.setFallingBlocks(board);
+			final boolean isFallingOccurred = animation.setFallingBlocks(board);
 			animationManager.addAnimation(animation);
+
+			// FIXME
+			// Repeat delete and fall repeatedly
+			if (!isDeleteOccurred && !isFallingOccurred) {
+				// Is some blocks collided, game over
+				// Else, shift to next
+				if (Collision.isCollided(board, operated)) {
+					// TODO
+					// If versus remote player, send game over message to server
+					// If operated block is collided to walls or other blocks, game over!!
+					animationManager.addAnimation(GameAnimationType.GAME_OVER);
+				} else {
+					operated.setBlocks(next.releaseNextBlocks());
+				}
+			}
 		} else {
 			// Automatically update block
 			operated.autoUpdate(elapsedMSec);
@@ -234,17 +251,26 @@ public class GameManager implements GameThreadManager {
 	
 	/**
 	 * Delete blocks in board. <br>
+	 * 
+	 * @return 	true  : more than a block is deleted <br>
+	 * 			false : no blocks are deleted <br>
 	 */
-	private void deleteBlocks() {
+	private boolean deleteBlocks() {
 		final Block[][] matrix = board.getMatrixedBlocks();
 		
 		final String word = blockSetFactory.getWord();
 		final int order = 0;
 		Set<Integer> deletedIds = DeleteBlockLine.deleteWordLine(matrix, word, order);
-		// Delete specified blocks from board
-		board.deleteBlocks(deletedIds);
-		// Release ids of deleted blocks from id factory
-		BlockIdFactory.getInstance().dissociateIds(deletedIds);
+
+		if (deletedIds.isEmpty()) {
+			return false;
+		} else {
+			// Delete specified blocks from board
+			board.deleteBlocks(deletedIds);
+			// Release ids of deleted blocks from id factory
+			BlockIdFactory.getInstance().dissociateIds(deletedIds);
+			return true;
+		}
 	}
 	
 	/**

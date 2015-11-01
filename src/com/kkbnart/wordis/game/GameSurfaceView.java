@@ -67,10 +67,11 @@ public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 	 * 
 	 * @param animationManager	Animation manager and executor
 	 * @param board				Current board
+	 * @param nextBlocks		Next block set
 	 * @return Game action to be taken after animation
 	 */
 	public GameStatus drawAnimation(final AnimationManager animationManager,
-			final Board board) {
+			final Board board, final NextBlocks nextBlocks) {
 		final SurfaceHolder holder = getHolder();
 		Canvas c = null;
 		try {
@@ -79,7 +80,7 @@ public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 			if (c != null) {
 				// Clear canvas
 				c.drawColor(0, PorterDuff.Mode.CLEAR);
-				return animationManager.executeAnimation(c, board);
+				return animationManager.executeAnimation(c, board, nextBlocks);
 			}
 		} finally {
 			try {

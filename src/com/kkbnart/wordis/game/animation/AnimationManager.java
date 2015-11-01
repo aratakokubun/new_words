@@ -6,6 +6,7 @@ import android.view.MotionEvent;
 import com.kkbnart.wordis.exception.NoAnimationException;
 import com.kkbnart.wordis.game.GameStatus;
 import com.kkbnart.wordis.game.board.Board;
+import com.kkbnart.wordis.game.object.block.NextBlocks;
 import com.kkbnart.wordis.game.player.WordisPlayer;
 
 /**
@@ -38,12 +39,13 @@ public class AnimationManager {
 	/**
 	 * Execute animation and return game action to be taken after animation. <br>
 	 * 
-	 * @param canvas	Surface view canvas
-	 * @param board		Current Board
+	 * @param canvas		Surface view canvas
+	 * @param board			Current Board
+	 * @param nextBlocks	Next block set
 	 * @return	Game action
 	 */
-	public GameStatus executeAnimation(final Canvas canvas, final Board board) {
-		return animationExecutor.execute(canvas, board);
+	public GameStatus executeAnimation(final Canvas canvas, final Board board, final NextBlocks nextBlocks) {
+		return animationExecutor.execute(canvas, board, nextBlocks);
 	}
 	
 	/**

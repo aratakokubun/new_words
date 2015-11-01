@@ -10,6 +10,7 @@ import com.kkbnart.wordis.exception.FontNotExistException;
 import com.kkbnart.wordis.game.GameStatus;
 import com.kkbnart.wordis.game.board.Board;
 import com.kkbnart.wordis.game.object.block.Block;
+import com.kkbnart.wordis.game.object.block.NextBlocks;
 import com.kkbnart.wordis.util.WordisFontTypes;
 import com.kkbnart.wordis.util.WordisFonts;
 
@@ -76,15 +77,18 @@ public class GameOverAnimation extends GameAnimation {
 	}
 
 	@Override
-	public void drawAnimation(final Canvas canvas, final Board board,
+	public void drawAnimation(final Canvas canvas, final Board board, final NextBlocks nextBlocks, 
 			final long elapsedTime, final long diffTime) {
+		final Paint paint =  new Paint();
 		// Collapse block
 		if (collapseTime.start < elapsedTime && elapsedTime < collapseTime.end) {
-			showCollapseBlock(canvas, board, diffTime);
+			drawCollapseBlock(canvas, paint, board, diffTime);
 		}
-		// Show text
+		// Draw next blocks
+		nextBlocks.draw(canvas, paint, board);
+		// Draw text
 		if (textTime.start < elapsedTime && elapsedTime < textTime.end) {
-			showGameOverText(canvas, board, elapsedTime, diffTime);
+			drawGameOverText(canvas, paint, board, elapsedTime, diffTime);
 		}
 	}
 	
@@ -92,10 +96,12 @@ public class GameOverAnimation extends GameAnimation {
 	 * Draw collapsing block animation. <br>
 	 * 
 	 * @param canvas		Surface view canvas
+	 * @param paint			Paint
 	 * @param board			Current board
 	 * @param diffTime		Elapsed milli time from previous animation time
 	 */
-	private void showCollapseBlock(final Canvas canvas, final Board board, final long diffTime) {
+	private void drawCollapseBlock(final Canvas canvas, final Paint paint,
+			final Board board, final long diffTime) {
 		final int size = board.getBlocks().size();
 		for (int i = 0; i < size; i++) {
 			final int id = board.getBlocks().keyAt(i);
@@ -105,7 +111,6 @@ public class GameOverAnimation extends GameAnimation {
 			b.setY(newY);
 		}
 		
-		final Paint paint =  new Paint();
 		board.draw(canvas, paint);
 	}
 	
@@ -113,13 +118,13 @@ public class GameOverAnimation extends GameAnimation {
 	 * Draw game over text animation. <br>
 	 * 
 	 * @param canvas		Surface view canvas
+	 * @param paint			Paint
 	 * @param board			Current board
 	 * @param elapsedTime	Elapsed milli time from start
 	 * @param diffTime		Elapsed milli time from previous animation time
 	 */
-	private void showGameOverText(final Canvas canvas, final Board board,
+	private void drawGameOverText(final Canvas canvas, final Paint paint, final Board board,
 			final long elapsedTime, final long diffTime) {
-		final Paint paint = new Paint();
 		paint.setColor(Color.YELLOW);
 		try {
 			paint.setTypeface(WordisFonts.getInstance().getFont(WordisFontTypes.OOGIEBOO));

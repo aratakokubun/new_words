@@ -93,6 +93,21 @@ public final class Game_
             }
         }
         {
+            View view = hasViews.findViewById(id.rightButton);
+            if (view!= null) {
+                view.setOnClickListener(new OnClickListener() {
+
+
+                    @Override
+                    public void onClick(View view) {
+                        Game_.this.rightButtonClick(view);
+                    }
+
+                }
+                );
+            }
+        }
+        {
             View view = hasViews.findViewById(id.upperButton);
             if (view!= null) {
                 view.setOnClickListener(new OnClickListener() {
@@ -108,14 +123,14 @@ public final class Game_
             }
         }
         {
-            View view = hasViews.findViewById(id.clockwiseButton);
+            View view = hasViews.findViewById(id.downButton);
             if (view!= null) {
                 view.setOnClickListener(new OnClickListener() {
 
 
                     @Override
                     public void onClick(View view) {
-                        Game_.this.clockwiseButtonClick(view);
+                        Game_.this.downButtonClick(view);
                     }
 
                 }
@@ -138,29 +153,14 @@ public final class Game_
             }
         }
         {
-            View view = hasViews.findViewById(id.rightButton);
+            View view = hasViews.findViewById(id.clockwiseButton);
             if (view!= null) {
                 view.setOnClickListener(new OnClickListener() {
 
 
                     @Override
                     public void onClick(View view) {
-                        Game_.this.rightButtonClick(view);
-                    }
-
-                }
-                );
-            }
-        }
-        {
-            View view = hasViews.findViewById(id.downButton);
-            if (view!= null) {
-                view.setOnClickListener(new OnClickListener() {
-
-
-                    @Override
-                    public void onClick(View view) {
-                        Game_.this.downButtonClick(view);
+                        Game_.this.clockwiseButtonClick(view);
                     }
 
                 }

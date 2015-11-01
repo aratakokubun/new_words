@@ -1,7 +1,9 @@
 package com.kkbnart.wordis.game.animation;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Map.Entry;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -10,6 +12,7 @@ import android.util.SparseArray;
 import com.kkbnart.wordis.game.GameStatus;
 import com.kkbnart.wordis.game.board.Board;
 import com.kkbnart.wordis.game.object.block.Block;
+import com.kkbnart.wordis.game.object.block.NextBlocks;
 import com.kkbnart.wordis.game.rule.Fall;
 import com.kkbnart.wordis.game.util.FloatRound;
 
@@ -22,7 +25,7 @@ import com.kkbnart.wordis.game.util.FloatRound;
 public class FreeFallAnimation extends GameAnimation {
 	// Map for block id and current falling speed
 	// Because the order of the list is very import, use linked hash map.
-	private HashMap<Integer, BlockFallSpeed> fallingBlocks = new LinkedHashMap<Integer, BlockFallSpeed>();
+	private HashMap<Integer, BlockFall> fallingBlocks = new LinkedHashMap<Integer, BlockFall>();
 	
 	public FreeFallAnimation(long animationTime, GameStatus priorAction) {
 		super(animationTime, priorAction);
@@ -32,8 +35,10 @@ public class FreeFallAnimation extends GameAnimation {
 	 * Set blocks falling below of which no block exists. <br>
 	 * 
 	 * @param board Current board
+	 * @return 	true	: more than a block has been added to falling block list <br>
+	 * 			false	: no blocks have been added
 	 */
-	public void setFallingBlocks(final Board board) {
+	public boolean setFallingBlocks(final Board board) {
 		fallingBlocks.clear();
 		
 		// Search for row
@@ -49,64 +54,67 @@ public class FreeFallAnimation extends GameAnimation {
 		final float ax = Fall.getInstance().getAXPerMSec(), ay = Fall.getInstance().getAYPerMSec();
 		
 		// Search for row
-		final int stepRow = ay < 0.f ? 1 : -1;
-		final int startRow = ay < 0.f ? 0 : matrixedBlock.length-1;
-		for (int j = 0; j < matrixedBlock[0].length; j++) {
-			int row = startRow;
-			for (int i = 0; i < matrixedBlock.length; i++) {
-				if (matrixedBlock[row][j] == null) {
-					// Add blocks to falling block list from i+1 to matrixedBlock.length
-					for (int k = i+1; k < matrixedBlock.length; k++) {
-						row += stepRow;
-						final Block target = matrixedBlock[row][j];
-						if (target != null) {
-							final int id = target.getId();
-							final BlockFallSpeed speed = new BlockFallSpeed(id, false, true);
-							// No duplication occurs while first search for row
-							fallingBlocks.put(id, speed);
-						}
+		if (ay != 0.f) {
+			final int stepRow = ay > 0.f ? 1 : -1;
+			final int startRow = ay > 0.f ? 0 : matrixedBlock.length-1;
+			for (int col = 0; col < matrixedBlock[0].length; col++) {
+				int row = startRow;
+				int emptyCells = 0;
+				for (int i = 0; i < matrixedBlock.length; i++) {
+					final Block target = matrixedBlock[row][col];
+					if (target == null) {
+						// Count up empty cells in the row
+						emptyCells++;
+					} else {
+						final int id = target.getId();
+						final BlockFall fall = new BlockFall(id);
+						fall.setYFall(0.f, target.getY() + emptyCells*(ay > 0.f ? 1.f : -1.f));
+						fallingBlocks.put(id, fall);
 					}
-					break;
+					row += stepRow;
 				}
-				row += stepRow;
 			}
 		}
 
 		// Search for column
-		final int stepCol = ax > 0.f ? 1 : -1;
-		final int startCol = ax > 0.f ? 0 : matrixedBlock[0].length-1;
-		for (int i = 0; i < matrixedBlock.length; i++) {
-			int col = startCol;
-			for (int j = 0; j < matrixedBlock[i].length; j++) {
-				if (matrixedBlock[i][col] == null) {
-					// Add blocks to falling block list from j+1 to matrixedBlock[i].length
-					for (int k = j+1; k < matrixedBlock[i].length; k++) {
-						col += stepCol;
-						final Block target = matrixedBlock[i][col];
-						if (target != null) {
-							final int id = target.getId();
-							// Duplication may occur while first search for row
-							if (fallingBlocks.containsKey(id)) {
-								fallingBlocks.get(id).setFallXEnabled(true);
-							} else {
-								final BlockFallSpeed speed = new BlockFallSpeed(id, true, false);
-								fallingBlocks.put(id, speed);
-							}
+		if (ax != 0.f) {
+			final int stepCol = ax > 0.f ? 1 : -1;
+			final int startCol = ax > 0.f ? 0 : matrixedBlock[0].length-1;
+			for (int row = 0; row < matrixedBlock.length; row++) {
+				int col = startCol;
+				int emptyCells = 0;
+				for (int j = 0; j < matrixedBlock[row].length; j++) {
+					final Block target = matrixedBlock[row][col];
+					if (target == null) {
+						// Count up empty cells in the row
+						emptyCells++;
+					} else {
+						final int id = target.getId();
+						// Duplication may occur while first search for row
+						if (fallingBlocks.containsKey(id)) {
+							fallingBlocks.get(id).setXFall(0.f, target.getX() + emptyCells*ax);
+						} else {
+							final BlockFall fall = new BlockFall(id);
+							fall.setXFall(0.f, target.getY() + emptyCells*(ax < 0.f ? 1.f : -1.f));
+							fallingBlocks.put(id, fall);
 						}
 					}
-					break;
+					col += stepCol;
 				}
-				col += stepCol;
 			}
 		}
+		
+		return !fallingBlocks.isEmpty();
 	}
 
 	@Override
-	protected void drawAnimation(final Canvas canvas, final Board board, final long elapsedTime,
-			final long diffTime) {
+	protected void drawAnimation(final Canvas canvas, final Board board, final NextBlocks nextBlocks, 
+			final long elapsedTime, final long diffTime) {
 		updateBlocks(board, diffTime);
+		
 		final Paint paint =  new Paint();
 		board.draw(canvas, paint);
+		nextBlocks.draw(canvas, paint, board);
 	}
 	
 	/**
@@ -116,63 +124,71 @@ public class FreeFallAnimation extends GameAnimation {
 	 */
 	private void updateBlocks(final Board board, final long diffTime) {
 		SparseArray<Block> blocks = board.getBlocks();
-		for (BlockFallSpeed speed : fallingBlocks.values()) {
-			final int id = speed.getId();
+		
+		ArrayList<Integer> removeIdList = new ArrayList<Integer>();
+		for (Entry<Integer, BlockFall> entry : fallingBlocks.entrySet()) {
+			final int id = entry.getKey();
+			final BlockFall blockFall = entry.getValue();
 			
 			// Update fall speed
-			speed.updateFallSpeed(Fall.getInstance().getAXPerMSec()*diffTime, Fall.getInstance().getAYPerMSec()*diffTime);
+			blockFall.updateFallSpeed(
+					blockFall.getXSpeed() + Fall.getInstance().getAXPerMSec() * diffTime,
+					blockFall.getYSpeed() + Fall.getInstance().getAYPerMSec() * diffTime);
 
-			final Block test = blocks.get(id).clone();
+			final float vx = blockFall.getXSpeed();
+			final float targetx = blockFall.getXTarget();
+			final float vy = blockFall.getYSpeed();
+			final float targety = blockFall.getYTarget();
 			
-			// Test update x
-			final float newX = FloatRound.round(test.getX() + speed.getFallXSpeed());
-			test.setX(newX);
-			// Check intersect with other blocks
-			for (int i = 0; i < blocks.size(); i++) {
-				final Block other = blocks.get(i);
-				// If test block intersects with other blocks, finish falling.
-				if (other.getId() != id && other.getRect().intersect(test.getRect())) {
-					clearFallFlag(id, true);
-					break;
-				}
-			}
-			// Not intersected, update block position
-			blocks.get(id).setX(newX);			
+			final Block block = blocks.get(id);
 			
-			// Test update y
-			final float newY = FloatRound.round(test.getY() + speed.getFallYSpeed());
-			test.setY(newY);
-			// Check intersect with other blocks
-			for (int i = 0; i < blocks.size(); i++) {
-				final Block other = blocks.get(i);
-				// If test block intersects with other blocks, finish falling.
-				if (other.getId() != id && other.getRect().intersect(test.getRect())) {
-					clearFallFlag(id, false);
-					break;
+			if (blockFall.getXEnabled()) {
+				float newX = FloatRound.round(block.getX() + vx);
+				// newX is coordinated not to be over target x
+				if (vx > 0.f) {
+					newX = Math.min(newX, targetx);
+				} else {
+					newX = Math.max(newX, targetx);
 				}
+				block.setX(newX);
 			}
-			// Not intersected, update block position
-			blocks.get(id).setY(newY);
+			
+			if (blockFall.getYEnabled()) {
+				float newY = FloatRound.round(block.getY() + vy);
+				// newX is coordinated not to be over target x
+				if (vy > 0.f) {
+					newY = Math.min(newY, targety);
+				} else {
+					newY = Math.max(newY, targety);
+				}
+				block.setY(newY);
+			}
+			
+			clearFallFlag(block, blockFall);
+			// If both x and y flag are cleared, remove the block from falling block list.
+			if (!blockFall.getXEnabled() && !blockFall.getYEnabled()) {
+				removeIdList.add(id);
+			}
+		}
+		
+		// Remove block fall id from list
+		for (int i : removeIdList) {
+			fallingBlocks.remove(i);
 		}
 	}
 	
-	private void clearFallFlag(final int id, final boolean isClearX) {
-		final BlockFallSpeed speed = fallingBlocks.get(id); 
-		// Clear flag
-		if (isClearX) {
-			speed.setFallXEnabled(false);
-		} else {
-			speed.setFallYEnabled(false);
+	private void clearFallFlag(final Block block, final BlockFall blockFall) {
+		// Clear flag if reached to target
+		if (block.getX() == blockFall.getXTarget()) {
+			blockFall.setXEnabled(false);
 		}
-		// If both x and y flag are cleared, remove the block from falling block list.
-		if (!speed.getFallXEnabled() && !speed.getFallYEnabled()) {
-			fallingBlocks.remove(id);
+		if (block.getY() == blockFall.getYTarget()) {
+			blockFall.setYEnabled(false);
 		}
 	}
 	
 	@Override
 	protected boolean isAnimationContinue() {
-		System.out.println("hogehogehoge");
 		return !fallingBlocks.isEmpty();
 	}
 

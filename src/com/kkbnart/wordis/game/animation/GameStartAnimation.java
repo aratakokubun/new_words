@@ -9,6 +9,7 @@ import com.kkbnart.wordis.Constants;
 import com.kkbnart.wordis.exception.FontNotExistException;
 import com.kkbnart.wordis.game.GameStatus;
 import com.kkbnart.wordis.game.board.Board;
+import com.kkbnart.wordis.game.object.block.NextBlocks;
 import com.kkbnart.wordis.util.WordisFontTypes;
 import com.kkbnart.wordis.util.WordisFonts;
 
@@ -23,8 +24,8 @@ public class GameStartAnimation extends GameAnimation {
 	}
 
 	@Override
-	protected void drawAnimation(Canvas canvas, Board board, long elapsedTime,
-			long diffTime) {
+	protected void drawAnimation(Canvas canvas, Board board, final NextBlocks nextBlocks, 
+			long elapsedTime, long diffTime) {
 		final Paint paint = new Paint();
 		paint.setColor(Color.YELLOW);
 		try {

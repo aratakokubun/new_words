@@ -2,9 +2,13 @@ package com.kkbnart.wordis.game;
 
 public enum GameStatus {
 	NONE (0),
-	GAMEFINISH (3),
-	PAUSE (2),
-	ANIMATION (1);
+	CONTROL(1),
+	DELETE(2),
+	ANIMATION (3),
+	RELEASE_NEXT(4),
+	GAMEFINISH (5),
+	PAUSE (6),
+	;
 	
 	private int priority;
 	private GameStatus(final int priority) {
