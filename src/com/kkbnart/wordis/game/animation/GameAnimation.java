@@ -2,8 +2,9 @@ package com.kkbnart.wordis.game.animation;
 
 import android.graphics.Canvas;
 
-import com.kkbnart.wordis.game.GameStatus;
+import com.kkbnart.wordis.game.GameState;
 import com.kkbnart.wordis.game.board.Board;
+import com.kkbnart.wordis.game.object.block.NextBlocks;
 
 /**
  * Base class for game animation. <br>
@@ -22,9 +23,9 @@ public abstract class GameAnimation {
 	// Previous animation time
 	private long previousTime;
 	// Action after this animation
-	private GameStatus postAction;
+	private GameState postAction;
 	
-	public GameAnimation(final long animationTime, final GameStatus priorAction) {
+	public GameAnimation(final long animationTime, final GameState priorAction) {
 		this.animationTime = animationTime;
 		this.postAction = priorAction;
 	}
@@ -37,11 +38,11 @@ public abstract class GameAnimation {
 		return animationTime;
 	}
 	
-	public void setPriorAction(final GameStatus priorAction) {
+	public void setPriorAction(final GameState priorAction) {
 		this.postAction = priorAction;
 	}
 	
-	public GameStatus getPostAction() {
+	public GameState getPostAction() {
 		return postAction;
 	}
 	
@@ -55,7 +56,7 @@ public abstract class GameAnimation {
 	 * @return	true  : Continue animation <br>
 	 * 			false : Animation time is over <br>
 	 */
-	private boolean isAnimationContinue() {
+	protected boolean isAnimationContinue() {
 		final long elapsedTime = System.currentTimeMillis() - startTime;
 		if (elapsedTime > animationTime) {
 			enabled = false;
@@ -68,12 +69,13 @@ public abstract class GameAnimation {
 	/**
 	 * Update animation defined in the class. <br>
 	 * 
-	 * @param canvas	Surface view canvas
-	 * @param board		Current board
+	 * @param canvas		Surface view canvas
+	 * @param board			Current board
+	 * @param nextBlocks	Next block set
 	 * @return	true  : Continue animation <br>
 	 * 			false : Animation time is over <br>
 	 */
-	public boolean executeAnimationUpdate(final Canvas canvas, final Board board) {
+	public boolean executeAnimationUpdate(final Canvas canvas, final Board board, final NextBlocks nextBlocks) {
 		final long now = System.currentTimeMillis();
 		// If not executed, raise flag and set start time
 		if (!enabled) {
@@ -82,7 +84,7 @@ public abstract class GameAnimation {
 		final long elapsedTime = now - startTime;
 		final long diffTime = now-previousTime;
 		
-		drawAnimation(canvas, board, elapsedTime, diffTime);
+		drawAnimation(canvas, board, nextBlocks, elapsedTime, diffTime);
 		previousTime = now;
 		
 		return isAnimationContinue();
@@ -105,8 +107,10 @@ public abstract class GameAnimation {
 	 * 
 	 * @param canvas		Surface view canvas
 	 * @param board			Current board
+	 * @param nextBlocks	Next block set
 	 * @param elapsedTime	Elapsed time from animation start
 	 * @param diffTime		Elapsed time from previous animation time
 	 */
-	protected abstract void drawAnimation(final Canvas canvas, final Board board, final long elapsedTime, final long diffTime);
+	protected abstract void drawAnimation(final Canvas canvas, final Board board,
+			final NextBlocks nextBlocks, final long elapsedTime, final long diffTime);
 }

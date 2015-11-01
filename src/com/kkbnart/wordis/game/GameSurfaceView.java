@@ -12,8 +12,8 @@ import android.view.SurfaceView;
 
 import com.kkbnart.wordis.game.animation.AnimationManager;
 import com.kkbnart.wordis.game.board.Board;
-import com.kkbnart.wordis.game.board.NextBlocks;
-import com.kkbnart.wordis.game.board.OperatedBlocks;
+import com.kkbnart.wordis.game.object.block.NextBlocks;
+import com.kkbnart.wordis.game.object.block.OperatedBlocks;
 
 public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callback {
 	private static final String TAG = GameSurfaceView.class.getSimpleName();
@@ -67,10 +67,11 @@ public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 	 * 
 	 * @param animationManager	Animation manager and executor
 	 * @param board				Current board
+	 * @param nextBlocks		Next block set
 	 * @return Game action to be taken after animation
 	 */
-	public GameStatus drawAnimation(final AnimationManager animationManager,
-			final Board board) {
+	public GameState drawAnimation(final AnimationManager animationManager,
+			final Board board, final NextBlocks nextBlocks) {
 		final SurfaceHolder holder = getHolder();
 		Canvas c = null;
 		try {
@@ -79,7 +80,7 @@ public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 			if (c != null) {
 				// Clear canvas
 				c.drawColor(0, PorterDuff.Mode.CLEAR);
-				return animationManager.executeAnimation(c, board);
+				return animationManager.executeAnimation(c, board, nextBlocks);
 			}
 		} finally {
 			try {
@@ -88,7 +89,7 @@ public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 				Log.e(TAG, "Can not unlock canvas");
 			}
 		}
-		return GameStatus.NONE;
+		return GameState.ANIMATION;
 	}
 
 	@Override

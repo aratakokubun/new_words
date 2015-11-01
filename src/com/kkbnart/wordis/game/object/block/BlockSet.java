@@ -1,4 +1,4 @@
-package com.kkbnart.wordis.game.object;
+package com.kkbnart.wordis.game.object.block;
 
 import java.util.ArrayList;
 

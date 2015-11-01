@@ -3,7 +3,7 @@ package com.kkbnart.wordis.game.animation;
 import java.util.HashMap;
 
 import com.kkbnart.wordis.exception.NoAnimationException;
-import com.kkbnart.wordis.game.GameStatus;
+import com.kkbnart.wordis.game.GameState;
 import com.kkbnart.wordis.game.player.WordisPlayer;
 
 /**
@@ -30,9 +30,11 @@ public class GameAnimationFactory {
 	public void updateAnimationSize(final WordisPlayer player, final int col, final int row, final int width, final int height) throws NoAnimationException {
 		// Register animations to factory
 		setAnimation(GameAnimationType.GAME_OVER, new GameOverAnimation(
-				/* animation time= */5000, GameStatus.GAMEFINISH, col));
+				/* animation time= */5000, GameState.GAMEFINISH, col));
 		setAnimation(GameAnimationType.GAME_START, new GameStartAnimation(
-				/* animation time= */3000, GameStatus.NONE));
+				/* animation time= */3000, GameState.CONTROL));
+		setAnimation(GameAnimationType.BLOCK_FALL, new FreeFallAnimation(
+				/* animation time= */0, GameState.DELETE));
 	}
 	
 	/**

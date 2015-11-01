@@ -93,21 +93,6 @@ public final class Game_
             }
         }
         {
-            View view = hasViews.findViewById(id.clockwiseButton);
-            if (view!= null) {
-                view.setOnClickListener(new OnClickListener() {
-
-
-                    @Override
-                    public void onClick(View view) {
-                        Game_.this.clockwiseButtonClick(view);
-                    }
-
-                }
-                );
-            }
-        }
-        {
             View view = hasViews.findViewById(id.downButton);
             if (view!= null) {
                 view.setOnClickListener(new OnClickListener() {
@@ -116,6 +101,21 @@ public final class Game_
                     @Override
                     public void onClick(View view) {
                         Game_.this.downButtonClick(view);
+                    }
+
+                }
+                );
+            }
+        }
+        {
+            View view = hasViews.findViewById(id.upperButton);
+            if (view!= null) {
+                view.setOnClickListener(new OnClickListener() {
+
+
+                    @Override
+                    public void onClick(View view) {
+                        Game_.this.upperButtonClick(view);
                     }
 
                 }
@@ -153,14 +153,14 @@ public final class Game_
             }
         }
         {
-            View view = hasViews.findViewById(id.upperButton);
+            View view = hasViews.findViewById(id.clockwiseButton);
             if (view!= null) {
                 view.setOnClickListener(new OnClickListener() {
 
 
                     @Override
                     public void onClick(View view) {
-                        Game_.this.upperButtonClick(view);
+                        Game_.this.clockwiseButtonClick(view);
                     }
 
                 }

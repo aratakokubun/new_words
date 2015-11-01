@@ -9,7 +9,7 @@ public class GameThread implements Runnable {
 	private Thread thread = null;
 	
 	// Sleep time [ms]
-	private static final long SLEEP = 30;
+	private static final long SLEEP = 25;
 	
 	public GameThread(final GameThreadManager manager) {
 		super();
@@ -33,7 +33,7 @@ public class GameThread implements Runnable {
 
 	@Override
 	public void run() {
-		final long sleepTime = 10;
+		final long sleepTime = 5;
 		long prevTime = System.currentTimeMillis();
 		while (manager.continueGame()) {
 			// Wait for SLEEP [ms]
@@ -50,7 +50,7 @@ public class GameThread implements Runnable {
 			// Update previous time
 			prevTime = System.currentTimeMillis();
 			
-			manager.invokeMainProcess();
+			manager.invokeMainProcess(elapsedTime);
 		}
 		
 		handleFinishGame();

@@ -30,7 +30,7 @@ import com.kkbnart.wordis.exception.NoAnimationException;
 import com.kkbnart.wordis.game.dialog.DialogDismissableOnClickListener;
 import com.kkbnart.wordis.game.dialog.GameMenuDialog;
 import com.kkbnart.wordis.game.dialog.SingleGameFinishDialog;
-import com.kkbnart.wordis.game.object.BlockSetFactory;
+import com.kkbnart.wordis.game.object.block.BlockSetFactory;
 import com.kkbnart.wordis.game.player.PlayerStatus;
 import com.kkbnart.wordis.game.player.WordisPlayer;
 import com.kkbnart.wordis.game.rule.MoveAmount;

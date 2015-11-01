@@ -1,4 +1,4 @@
-package com.kkbnart.wordis.game.object;
+package com.kkbnart.wordis.game.object.character;
 
 public enum CharacterDefinition {
 	A(0, "A"), B(1, "B"), C(2, "C"), D(3, "D"), E(4, "E"), F(5, "F"), G(6, "G"),

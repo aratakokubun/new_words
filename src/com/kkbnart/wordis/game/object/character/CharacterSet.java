@@ -1,4 +1,4 @@
-package com.kkbnart.wordis.game.object;
+package com.kkbnart.wordis.game.object.character;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;

@@ -8,8 +8,8 @@ import android.graphics.RectF;
 import android.util.SparseArray;
 
 import com.kkbnart.wordis.exception.InvalidParameterException;
-import com.kkbnart.wordis.game.object.Block;
-import com.kkbnart.wordis.game.object.BlockSet;
+import com.kkbnart.wordis.game.object.block.Block;
+import com.kkbnart.wordis.game.object.block.BlockSet;
 
 /**
  * Board to contain all settled blocks. <br>
@@ -28,7 +28,10 @@ public class Board {
 	private int collisionColumn, collisionRow;
 	// Blocks which the board contains
 	private SparseArray<Block> blocks = new SparseArray<Block>();
-
+	
+	// Stack position for over flow
+	private int stackCol, stackRow;
+	
 	/**
 	 * Constructor with specifying area, size and blocks. <br>
 	 * 
@@ -42,13 +45,16 @@ public class Board {
 	 * @param collisionY		Upper line of the collision of the board
 	 * @param collisionColumn	Column number of the collision of the board
 	 * @param collisionRow		Row number of the collision of the board
+	 * @param stackCellX		X position of stacking cell
+	 * @param stackCellY		Y position of stacking cell
 	 * @throws InvalidParameterException	Invalid parameters are specified
 	 */
 	public Board(final int x, final int y, final int width, final int height,
 			final int column, final int row, final int collisionX, final int collisionY,
-			final int collisionColumn, final int collisionRow) throws InvalidParameterException {
+			final int collisionColumn, final int collisionRow, final float stackCellX, final float stackCellY)
+			throws InvalidParameterException {
 		this.updateBoardArea(x, y, width, height);
-		this.updateBoardSize(column, row, collisionX, collisionY, collisionColumn, collisionRow);
+		this.updateBoardSize(column, row, collisionX, collisionY, collisionColumn, collisionRow, stackCellX, stackCellY);
 	}
 	
 	/**
@@ -70,6 +76,7 @@ public class Board {
 	}
 	
 	/**
+	 * 
 	 * Update board matrix size. <br>
 	 * This method is not allowed while playing. <br>
 	 * 
@@ -79,10 +86,13 @@ public class Board {
 	 * @param collisionY		Upper line of the collision of the board
 	 * @param collisionColumn	Column number of the collision of the board
 	 * @param collisionRow		Row number of the collision of the board
+	 * @param stackCellX		X position of stacking cell
+	 * @param stackCellY		Y position of stacking cell
+	 * @throws InvalidParameterException	Invalid parameters are specified
 	 */
-	public void updateBoardSize(final int column, final int row,
-			final int collisionX, final int collisionY,
-			final int collisionColumn, final int collisionRow) throws InvalidParameterException {
+	public void updateBoardSize(final int column, final int row, final int collisionX, final int collisionY,
+			final int collisionColumn, final int collisionRow, final float stackCellX, final float stackCellY)
+			throws InvalidParameterException {
 		if (row<=0 || column<=0 || collisionColumn<=collisionX || collisionRow<=collisionY) {
 			throw new InvalidParameterException();
 		}
@@ -92,6 +102,8 @@ public class Board {
 		this.collisionY = collisionY;
 		this.collisionColumn = collisionColumn;
 		this.collisionRow = collisionRow;
+		this.stackCol = (int)stackCellX;
+		this.stackRow = (int)((collisionRow-1) - ((int)stackCellY - collisionY));
 	}
 	
 	/**
@@ -234,10 +246,19 @@ public class Board {
 		for (int i = 0; i < blocks.size(); i++) {
 			final Block b = blocks.get(blocks.keyAt(i));
 			final int row = (collisionRow-1) - ((int)b.getY() - collisionY);
-			System.out.println("cr:"+collisionRow + ", by:" + b.getY() + ", cy:" + collisionY);
 			final int column = (int)b.getX() - collisionX;
 			matrix[row][column] = b.clone();
 		}
 		return matrix;
+	}
+	
+	/**
+	 * Get is board stacked and can not accommodate more blocks. <br>
+	 * 
+	 * @return Is board stacked or not.
+	 */
+	public boolean getIsBoardStacked() {
+		final Block[][] matrix = getMatrixedBlocks();
+		return matrix[stackRow][stackCol] != null;
 	}
 }

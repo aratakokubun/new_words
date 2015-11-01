@@ -1,12 +1,12 @@
-package com.kkbnart.wordis.game.board;
+package com.kkbnart.wordis.game.object.block;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
 
-import com.kkbnart.wordis.game.object.Block;
-import com.kkbnart.wordis.game.object.BlockSet;
-import com.kkbnart.wordis.game.object.Collision;
-import com.kkbnart.wordis.game.rule.FreeFall;
+import com.kkbnart.wordis.game.board.Board;
+import com.kkbnart.wordis.game.board.NearestMargin;
+import com.kkbnart.wordis.game.rule.Collision;
+import com.kkbnart.wordis.game.rule.Fall;
 
 /**
  * Blocks which are on operation. <br>
@@ -47,11 +47,14 @@ public class OperatedBlocks extends BlockSet {
 	
 	/**
 	 * Update block position at each frame automatically. <br>
+	 * 
+	 * @param elapsedMSec	Elapsed milli second from previous frame
 	 */
-	public synchronized void autoUpdate() {
+	public synchronized void autoUpdate(final long elapsedMSec) {
 		// FIXME
 		// count on time since last update
-		update(FreeFall.getInstance().getXPerFrame(), FreeFall.getInstance().getYPerFrame());
+		update(	Fall.getInstance().getXPerMSec() * elapsedMSec,
+				Fall.getInstance().getYPerMSec() * elapsedMSec);
 	}
 	
 	/**
@@ -95,7 +98,7 @@ public class OperatedBlocks extends BlockSet {
 	 * 
 	 * @param board		Current board
 	 * @param clockWise	Is clockwise direction or not
-	 * @see com.kkbnart.wordis.game.object.BlockSet#getDiffAroundCells
+	 * @see com.kkbnart.wordis.game.object.block.BlockSet#getDiffAroundCells
 	 */
 	public synchronized void operate(final Board board, final boolean clockWise) {
 		// FIXME

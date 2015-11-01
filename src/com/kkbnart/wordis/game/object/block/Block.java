@@ -1,4 +1,4 @@
-package com.kkbnart.wordis.game.object;
+package com.kkbnart.wordis.game.object.block;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -7,6 +7,7 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 
 import com.kkbnart.wordis.game.board.Board;
+import com.kkbnart.wordis.game.object.character.Character;
 
 /**
  * State of blocks
