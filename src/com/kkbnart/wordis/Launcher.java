@@ -24,7 +24,7 @@ public class Launcher extends Activity {
 		}
 		
 		// Instantly move to menu activity
-		Intent intent = new Intent(getApplicationContext(), Menu.class);
+		Intent intent = new Intent(this, Menu.class);
 		startActivity(intent);
 		
 		// Finish this activity
