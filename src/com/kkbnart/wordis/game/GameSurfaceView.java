@@ -70,7 +70,7 @@ public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 	 * @param nextBlocks		Next block set
 	 * @return Game action to be taken after animation
 	 */
-	public GameStatus drawAnimation(final AnimationManager animationManager,
+	public GameState drawAnimation(final AnimationManager animationManager,
 			final Board board, final NextBlocks nextBlocks) {
 		final SurfaceHolder holder = getHolder();
 		Canvas c = null;
@@ -89,7 +89,7 @@ public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 				Log.e(TAG, "Can not unlock canvas");
 			}
 		}
-		return GameStatus.NONE;
+		return GameState.ANIMATION;
 	}
 
 	@Override

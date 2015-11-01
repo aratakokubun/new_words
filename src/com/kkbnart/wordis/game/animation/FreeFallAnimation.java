@@ -9,7 +9,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.util.SparseArray;
 
-import com.kkbnart.wordis.game.GameStatus;
+import com.kkbnart.wordis.game.GameState;
 import com.kkbnart.wordis.game.board.Board;
 import com.kkbnart.wordis.game.object.block.Block;
 import com.kkbnart.wordis.game.object.block.NextBlocks;
@@ -27,7 +27,7 @@ public class FreeFallAnimation extends GameAnimation {
 	// Because the order of the list is very import, use linked hash map.
 	private HashMap<Integer, BlockFall> fallingBlocks = new LinkedHashMap<Integer, BlockFall>();
 	
-	public FreeFallAnimation(long animationTime, GameStatus priorAction) {
+	public FreeFallAnimation(long animationTime, GameState priorAction) {
 		super(animationTime, priorAction);
 	}
 
@@ -65,7 +65,7 @@ public class FreeFallAnimation extends GameAnimation {
 					if (target == null) {
 						// Count up empty cells in the row
 						emptyCells++;
-					} else {
+					} else if (emptyCells > 0) {
 						final int id = target.getId();
 						final BlockFall fall = new BlockFall(id);
 						fall.setYFall(0.f, target.getY() + emptyCells*(ay > 0.f ? 1.f : -1.f));
@@ -93,7 +93,7 @@ public class FreeFallAnimation extends GameAnimation {
 						// Duplication may occur while first search for row
 						if (fallingBlocks.containsKey(id)) {
 							fallingBlocks.get(id).setXFall(0.f, target.getX() + emptyCells*ax);
-						} else {
+						} else if (emptyCells > 0) {
 							final BlockFall fall = new BlockFall(id);
 							fall.setXFall(0.f, target.getY() + emptyCells*(ax < 0.f ? 1.f : -1.f));
 							fallingBlocks.put(id, fall);
@@ -179,10 +179,10 @@ public class FreeFallAnimation extends GameAnimation {
 	
 	private void clearFallFlag(final Block block, final BlockFall blockFall) {
 		// Clear flag if reached to target
-		if (block.getX() == blockFall.getXTarget()) {
+		if (FloatRound.equals(block.getX(), blockFall.getXTarget())) {
 			blockFall.setXEnabled(false);
 		}
-		if (block.getY() == blockFall.getYTarget()) {
+		if (FloatRound.equals(block.getY(), blockFall.getYTarget())) {
 			blockFall.setYEnabled(false);
 		}
 	}

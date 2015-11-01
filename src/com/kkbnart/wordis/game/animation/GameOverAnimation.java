@@ -7,7 +7,7 @@ import android.util.Log;
 
 import com.kkbnart.wordis.Constants;
 import com.kkbnart.wordis.exception.FontNotExistException;
-import com.kkbnart.wordis.game.GameStatus;
+import com.kkbnart.wordis.game.GameState;
 import com.kkbnart.wordis.game.board.Board;
 import com.kkbnart.wordis.game.object.block.Block;
 import com.kkbnart.wordis.game.object.block.NextBlocks;
@@ -35,7 +35,7 @@ public class GameOverAnimation extends GameAnimation {
 	private String gameOverText = "LOSE";
 	private AnimationTime textTime;
 
-	public GameOverAnimation(final long animationTime, final GameStatus postAction, final int col) {
+	public GameOverAnimation(final long animationTime, final GameState postAction, final int col) {
 		super(animationTime, postAction);
 		setAnimationParameters(col);
 		collapseTime = new AnimationTime(10/*ms*/, 3000/*ms*/);

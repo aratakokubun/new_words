@@ -4,7 +4,7 @@ import android.graphics.Canvas;
 import android.view.MotionEvent;
 
 import com.kkbnart.wordis.exception.NoAnimationException;
-import com.kkbnart.wordis.game.GameStatus;
+import com.kkbnart.wordis.game.GameState;
 import com.kkbnart.wordis.game.board.Board;
 import com.kkbnart.wordis.game.object.block.NextBlocks;
 import com.kkbnart.wordis.game.player.WordisPlayer;
@@ -44,7 +44,7 @@ public class AnimationManager {
 	 * @param nextBlocks	Next block set
 	 * @return	Game action
 	 */
-	public GameStatus executeAnimation(final Canvas canvas, final Board board, final NextBlocks nextBlocks) {
+	public GameState executeAnimation(final Canvas canvas, final Board board, final NextBlocks nextBlocks) {
 		return animationExecutor.execute(canvas, board, nextBlocks);
 	}
 	

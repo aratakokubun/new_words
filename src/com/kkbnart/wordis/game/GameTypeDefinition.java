@@ -36,6 +36,7 @@ public class GameTypeDefinition {
 	public int boardCollisionRow, boardCollisionCol;
 	public float boardXRate, boardYRate;
 	public float boardWRate, boardHRate;
+	public float boardStackCellX, boardStackCellY;
 
 	// Operated block parameters
 	private static String OPERATED = "operated";
@@ -92,6 +93,8 @@ public class GameTypeDefinition {
 			boardYRate = (float)boardJson.getDouble("yRate");
 			boardWRate = (float)boardJson.getDouble("wRate");
 			boardHRate = (float)boardJson.getDouble("hRate");
+			boardStackCellX = (float)boardJson.getDouble("stackCellX");
+			boardStackCellY = (float)boardJson.getDouble("stackCellY");
 			// Operated block parameters
 			final JSONObject operatedJson = property.getJSONObject(OPERATED);
 			operatedX = operatedJson.getInt("x");
@@ -135,6 +138,8 @@ public class GameTypeDefinition {
 			boardYRate = (float)boardRoot.get("yRate").asDouble();
 			boardWRate = (float)boardRoot.get("wRate").asDouble();
 			boardHRate = (float)boardRoot.get("hRate").asDouble();
+			boardStackCellX = (float)boardRoot.get("stackCellX").asDouble();
+			boardStackCellY = (float)boardRoot.get("stackCellY").asDouble();
 			// Operated block parameters
 			final JsonNode operatedRoot = root.get(OPERATED);
 			operatedX = operatedRoot.get("x").asInt();

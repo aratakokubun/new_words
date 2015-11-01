@@ -48,7 +48,7 @@ public class GameManager implements GameThreadManager {
 	// Game type
 	private GameType gameType;
 	// Game status
-	private GameStatus gameStatus;
+	private GameState gameState;
 	// Wordis player type
 	private WordisPlayer player;
 	
@@ -82,7 +82,6 @@ public class GameManager implements GameThreadManager {
 		operated.setBlocks(next.releaseNextBlocks());
 
 		gameType = type;
-		gameStatus = GameStatus.NONE;
 		
 		// TODO
 		// Initialize player status
@@ -94,6 +93,7 @@ public class GameManager implements GameThreadManager {
 
 		// Set start animation
 		animationManager.addAnimation(GameAnimationType.GAME_START);
+		gameState = GameState.ANIMATION;
 		
 		// Start game thread
 		gameThread.startThread();
@@ -117,12 +117,12 @@ public class GameManager implements GameThreadManager {
 		final int w = (int)(gtd.boardWRate * width);
 		final int h = (int)(gtd.boardHRate * height);
 		if (board == null) {
-			board = new Board(x, y, w, h, gtd.boardCol, gtd.boardRow,
-					gtd.boardCollisionX, gtd.boardCollisionY, gtd.boardCollisionCol, gtd.boardCollisionRow);
+			board = new Board(x, y, w, h, gtd.boardCol, gtd.boardRow, gtd.boardCollisionX, gtd.boardCollisionY,
+					gtd.boardCollisionCol, gtd.boardCollisionRow, gtd.boardStackCellX, gtd.boardStackCellY);
 		} else {
 			board.updateBoardArea(x, y, w, h);
-			board.updateBoardSize(gtd.boardCol, gtd.boardRow,
-					gtd.boardCollisionX, gtd.boardCollisionY, gtd.boardCollisionCol, gtd.boardCollisionRow);
+			board.updateBoardSize(gtd.boardCol, gtd.boardRow, gtd.boardCollisionX, gtd.boardCollisionY,
+					gtd.boardCollisionCol, gtd.boardCollisionRow, gtd.boardStackCellX, gtd.boardStackCellY);
 		}
 		
 		// Create operated block set
@@ -150,103 +150,100 @@ public class GameManager implements GameThreadManager {
 	/**
 	 * @see GameThreadManager#continueGame()
 	 */
+	@Override
 	public boolean continueGame() {
-		return gameStatus != GameStatus.GAMEFINISH;
+		return gameState != GameState.GAMEFINISH;
 	}
 	
 	/**
 	 * @see GameThreadManager#invokeMainProcess()
 	 */
+	@Override
 	public synchronized void invokeMainProcess(final long elapsedMSec) {
-		if (!checkIsNull() && gameStatus != GameStatus.PAUSE) {
-			if (animationManager.hasAnimation()) {
+		// If game is not ready, skip process
+		if (checkIsNull()) {
+			return;
+		}
+				
+		// Process according to game status
+		try {
+			System.out.println("state : " + gameState);
+			switch (gameState) {
+			case CONTROL:
+				updateOperatedBlock(elapsedMSec);
+				break;
+			case DELETE:
+				updateDeleteBlock(elapsedMSec);
+				break;
+			case ANIMATION:
 				updateAnimation();
-			} else {
-				// Update and draw blocks while not animation
-				try {
-					updateBlocks(elapsedMSec);
-				} catch (BlockCreateException | NoAnimationException e) {
-					// TODO
-					// Handle exception with showing some message and terminate game.
-				}
-				updateView();
+				return;
+			case RELEASE_NEXT:
+				operated.setBlocks(next.releaseNextBlocks());
+				gameState = GameState.CONTROL;
+				break;
+			default:
+				// Do nothing
+				return;
 			}
+			updateView();
+		} catch (BlockCreateException | NoAnimationException e) {
+			// TODO
+			// Handle exception with showing some message and terminate game.
 		}
 	}
 	
 	/**
-	 * @see GameThreadManager#finishGame()
-	 */
-	public void finishGame() {
-		switch (gameType) {
-		case TEST:
-		case PRACTICE:
-		case SINGLE:
-			final PlayerStatus myStatus = playerStatusMap.get(WordisPlayer.MY_PLAYER);
-			gameTerminate.terminateSingle(myStatus);
-			break;
-		case VS_CPU:
-			// TODO
-			break;
-		case MULTI_NET:
-			// TODO
-			break;
-		}
-	}
-	
-	/**
-	 * Update view animation and take game actions after the animation. <br>
-	 */
-	private void updateAnimation() {
-		gameStatus = gsv.drawAnimation(animationManager, board, next);
-	}
-	
-	/**
-	 * Update state of blocks in board. <br>
+	 * Update blocks while control by the player
 	 * 
-	 * @throws BlockCreateException Can not create new block set
-	 * @throws NoAnimationException Specified animation is not registered 
+	 * @param elapsedTime	Elapsed time from previous frame
 	 */
-	private void updateBlocks(final long elapsedMSec) throws BlockCreateException, NoAnimationException  {
-		// FIXME
-		// Change game over condition
-		if (Collision.isCollided(board, operated)) {
-			// TODO
-			// If versus remote player, send game over message to server
-			// If operated block is collided to walls or other blocks, game over!!
-			animationManager.addAnimation(GameAnimationType.GAME_OVER);
-		} else if (Collision.isContacted(board, operated)) {
-			// If contacted to walls or other blocks, stable the operated blocks and set next
-			board.addBlockSet(operated);
-			operated.setBlocks(next.releaseNextBlocks());
-			// TODO
-			// Delete lines
-			final boolean isDeleteOccurred = deleteBlocks();
-			// TODO
-			// Set animation
-			GameAnimationFactory factory = animationManager.getAnimationFactory();
-			FreeFallAnimation animation = (FreeFallAnimation)factory.create(GameAnimationType.BLOCK_FALL);
-			final boolean isFallingOccurred = animation.setFallingBlocks(board);
-			animationManager.addAnimation(animation);
-
-			// FIXME
-			// Repeat delete and fall repeatedly
-			if (!isDeleteOccurred && !isFallingOccurred) {
-				// Is some blocks collided, game over
-				// Else, shift to next
-				if (Collision.isCollided(board, operated)) {
-					// TODO
-					// If versus remote player, send game over message to server
-					// If operated block is collided to walls or other blocks, game over!!
-					animationManager.addAnimation(GameAnimationType.GAME_OVER);
-				} else {
-					operated.setBlocks(next.releaseNextBlocks());
-				}
-			}
+	private void updateOperatedBlock(final long elapsedMSec) {
+		if (Collision.isContacted(board, operated)) {
+			gameState = GameState.DELETE;
 		} else {
 			// Automatically update block
 			operated.autoUpdate(elapsedMSec);
 		}
+	}
+	
+	private void updateDeleteBlock(final long elapsedMSec) throws BlockCreateException, NoAnimationException {
+		// If contacted to walls or other blocks, stable the operated blocks and set next
+		board.addBlockSet(operated);
+		
+		// Delete blocks
+		final boolean isDeleteOccurred = deleteBlocks();
+
+		// Set delete animation
+		GameAnimationFactory factory = animationManager.getAnimationFactory();
+		FreeFallAnimation animation = (FreeFallAnimation)factory.create(GameAnimationType.BLOCK_FALL);
+		final boolean isFallingOccurred = animation.setFallingBlocks(board);
+		
+		// If delete or fall occur, update animation
+		// Else, shift to "game over" or "release next"
+		if (isDeleteOccurred || isFallingOccurred) {
+			animationManager.addAnimation(animation);
+			gameState = GameState.ANIMATION;
+		} else {
+			if (isGameOver()) {
+				// TODO
+				// If versus remote player, send game over message to server
+				// If operated block is collided to walls or other blocks, game over!!
+				animationManager.addAnimation(GameAnimationType.GAME_OVER);
+				gameState = GameState.ANIMATION;
+			} else {
+				operated.setBlocks(next.releaseNextBlocks());
+				gameState = GameState.CONTROL;
+			}
+		}
+	}
+	
+	/**
+	 * Judge game over. <br>
+	 * @return
+	 */
+	private boolean isGameOver() {
+		return board.getIsBoardStacked();
 	}
 	
 	/**
@@ -274,6 +271,15 @@ public class GameManager implements GameThreadManager {
 	}
 	
 	/**
+	 * Update view animation and take game actions after the animation. <br>
+	 */
+	private void updateAnimation() {
+		if (animationManager.hasAnimation()) {
+			gameState = gsv.drawAnimation(animationManager, board, next);
+		}
+	}
+	
+	/**
 	 * Update view graphics. <br>
 	 */
 	private void updateView() {
@@ -292,6 +298,27 @@ public class GameManager implements GameThreadManager {
 	}
 	
 	/**
+	 * @see GameThreadManager#finishGame()
+	 */
+	@Override
+	public void finishGame() {
+		switch (gameType) {
+		case TEST:
+		case PRACTICE:
+		case SINGLE:
+			final PlayerStatus myStatus = playerStatusMap.get(WordisPlayer.MY_PLAYER);
+			gameTerminate.terminateSingle(myStatus);
+			break;
+		case VS_CPU:
+			// TODO
+			break;
+		case MULTI_NET:
+			// TODO
+			break;
+		}
+	}
+	
+	/**
 	 * To forcefully finish game from outside, interrupt thread. <br>
 	 */
 	public void interruptGame() {
@@ -299,11 +326,11 @@ public class GameManager implements GameThreadManager {
 	}
 	
 	public void suspendGame() {
-		gameStatus = GameStatus.PAUSE;
+		gameState = GameState.PAUSE;
 	}
 	
 	public void resumeGame() {
-		gameStatus = GameStatus.NONE;
+		gameState = GameState.NONE;
 	}
 	
 	public GameType getGameType() {

@@ -5,7 +5,7 @@ import java.util.Set;
 
 import android.graphics.Canvas;
 
-import com.kkbnart.wordis.game.GameStatus;
+import com.kkbnart.wordis.game.GameState;
 import com.kkbnart.wordis.game.board.Board;
 import com.kkbnart.wordis.game.object.block.NextBlocks;
 
@@ -40,9 +40,9 @@ public class AnimationExecutor {
 	 * @param nextBlocks	Next block set
 	 * @return action	Game action to be taken after animation
 	 */
-	public GameStatus execute(final Canvas canvas, final Board board, final NextBlocks nextBlocks) {
+	public GameState execute(final Canvas canvas, final Board board, final NextBlocks nextBlocks) {
 		// Action to be taken after animation (default None)
-		GameStatus action = GameStatus.NONE;
+		GameState action = GameState.NONE;
 		Set<GameAnimation> removeAnimations = new HashSet<GameAnimation>();
 		for (GameAnimation animation : animations) {
 			if (!animation.executeAnimationUpdate(canvas, board, nextBlocks)) {
@@ -55,7 +55,14 @@ public class AnimationExecutor {
 		for (GameAnimation animation : removeAnimations) {
 			animations.remove(animation);
 		}
-		return action;
+		
+		// Return action if state is not NONE
+		// Return ANIMATION if NONE
+		if (action == GameState.NONE) {
+			return GameState.ANIMATION;
+		} else {
+			return action;
+		}
 	}
 	
 	public boolean hasAnimation() {
