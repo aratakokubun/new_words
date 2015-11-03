@@ -16,7 +16,7 @@ public class BlockDeleteAnimation extends GameAnimation {
 	private static final long FLASH_INTERVAL = 50L;
 	private AnimationTime flashTime;
 	// Magnification rate finally reached on disappear
-	private static final float DISAPPEAR_MAG = 0.2f;
+	private static final float DISAPPEAR_MAG = 0.4f;
 	private AnimationTime disappearTime;
 	private Set<Block> deletedBlocks = new HashSet<Block>();
 
@@ -35,7 +35,7 @@ public class BlockDeleteAnimation extends GameAnimation {
 			NextBlocks nextBlocks, long elapsedTime, long diffTime) {
 		final Paint paint = new Paint();
 		
-		// Collapse block
+		// Delete blocks
 		if (flashTime.start < elapsedTime && elapsedTime < flashTime.end) {
 			drawFlashBlock(canvas, paint, board, elapsedTime);
 		}
@@ -67,7 +67,7 @@ public class BlockDeleteAnimation extends GameAnimation {
 		board.draw(canvas, paint);
 		
 		elapsedTime -= disappearTime.start;
-		final int disappearAlpha = (int)((float)(1.f - elapsedTime/ disappearTime.getLength()) * 255);
+		final int disappearAlpha = (int)(0.6f * 255);
 		final float mag = 1.f + DISAPPEAR_MAG * elapsedTime/ disappearTime.getLength();
 		paint.setAlpha(disappearAlpha);
 		for (Block b : deletedBlocks) {

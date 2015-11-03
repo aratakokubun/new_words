@@ -3,6 +3,7 @@ package com.kkbnart.wordis.game;
 import java.util.HashSet;
 import java.util.Set;
 
+import android.util.SparseArray;
 import android.view.MotionEvent;
 
 import com.kkbnart.wordis.exception.BlockCreateException;
@@ -204,6 +205,8 @@ public class GameManager implements GameThreadManager {
 	 */
 	private void updateOperatedBlocks(final long elapsedMSec) {
 		if (Collision.isContacted(board, operated)) {
+			// If contacted to walls or other blocks, stable the operated blocks and set next
+			board.addBlockSet(operated);
 			gameState = GameState.FALL;
 		} else {
 			// Automatically update block
@@ -218,9 +221,6 @@ public class GameManager implements GameThreadManager {
 	 * @throws NoAnimationException
 	 */
 	private void updateFallBlocks() throws BlockCreateException, NoAnimationException {
-		// If contacted to walls or other blocks, stable the operated blocks and set next
-		board.addBlockSet(operated);
-		
 		// Set fall animation
 		GameAnimationFactory factory = animationManager.getAnimationFactory();
 		FreeFallAnimation animation = (FreeFallAnimation)factory.create(GameAnimationType.BLOCK_FALL);
