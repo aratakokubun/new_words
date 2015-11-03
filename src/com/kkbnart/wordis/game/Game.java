@@ -34,6 +34,7 @@ import com.kkbnart.wordis.game.object.block.BlockSetFactory;
 import com.kkbnart.wordis.game.player.PlayerStatus;
 import com.kkbnart.wordis.game.player.WordisPlayer;
 import com.kkbnart.wordis.game.rule.MoveAmount;
+import com.kkbnart.wordis.game.rule.ScoreCalculator;
 import com.kkbnart.wordis.game.util.Direction;
 import com.kkbnart.wordis.menu.Menu;
 
@@ -66,8 +67,9 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 		// These variables are passed from menu with static class or Intent
 		// Load property files
 		try {
-			loadGameProperties("test", "downFall");
-			manager.setBlockSetFactory(new BlockSetFactory(this, "normal", "TEST"));
+			loadGameProperties("test", "downFall", "normal");
+			// manager.setBlockSetFactory(new BlockSetFactory(this, "normal", "TEST"));
+			manager.setBlockSetFactory(new BlockSetFactory(this, "short", "TEST"));
 		} catch (BlockCreateException | LoadPropertyException e) {
 			forceFinishGame(e);
 			return;
@@ -100,9 +102,11 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 	 * @throws LoadPropertyException Can not load property files
 	 */
 	private void loadGameProperties(final String gameTypeName,
-			final String moveAmountName) throws LoadPropertyException {
+			final String moveAmountName, final String scorePatternName) throws LoadPropertyException {
 		GameTypeDefinition.getInstance().readJson(gameTypeName, this);
 		MoveAmount.getInstance().readJson(moveAmountName, this);
+		ScoreCalculator.getInstance().readJson(scorePatternName, this);
+		System.out.println("here");
 	}
 	
 	/**
@@ -209,9 +213,8 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 		manager.rotateBlock(true);
 	}
 	
-	@CheckedChange(R.id.menuButton)
-	protected void menuButtonCheckedChange(final CompoundButton button,
-			final Boolean isChecked) {		
+	@Click(R.id.menuButton)
+	protected void menuButtonCClick(final View view) {		
 		Dialog dialog = new GameMenuDialog(this, retryClickListener,
 				exitClickListener, dialogCancelListener, /*cancel button enabled = */ true);
 		dialog.show();

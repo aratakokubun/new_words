@@ -217,6 +217,12 @@ public class DeleteBlockLine {
 		return deletedBlocks;
 	}
 	
+	/**
+	 * Get string of the block. <br>
+	 * 
+	 * @param b Block which can be bull
+	 * @return String of the block
+	 */
 	private static String convertBlockString(Block b) {
 		if (b == null) {
 			return NULL_OPTION;
@@ -224,6 +230,7 @@ public class DeleteBlockLine {
 			// TODO
 			// change here to operate special string
 			// For example, "*" string for any string item
+			// Better to use StringPattern for * search
 			return b.getCharacterString();
 		}
 	}

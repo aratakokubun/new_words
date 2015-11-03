@@ -1,4 +1,4 @@
-package com.kkbnart.wordis.game;
+package com.kkbnart.wordis.game.thread;
 
 import android.os.Handler;
 import android.os.Message;

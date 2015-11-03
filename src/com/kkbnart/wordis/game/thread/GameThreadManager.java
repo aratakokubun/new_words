@@ -1,4 +1,4 @@
-package com.kkbnart.wordis.game;
+package com.kkbnart.wordis.game.thread;
 
 /**
  * Interface between Game Thread and it's manager. <br>

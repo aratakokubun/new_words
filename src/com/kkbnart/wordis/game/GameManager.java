@@ -25,6 +25,8 @@ import com.kkbnart.wordis.game.player.PlayerStatusMap;
 import com.kkbnart.wordis.game.player.WordisPlayer;
 import com.kkbnart.wordis.game.rule.Collision;
 import com.kkbnart.wordis.game.rule.DeleteBlockLine;
+import com.kkbnart.wordis.game.thread.GameThread;
+import com.kkbnart.wordis.game.thread.GameThreadManager;
 
 public class GameManager implements GameThreadManager {
 	// Game board
