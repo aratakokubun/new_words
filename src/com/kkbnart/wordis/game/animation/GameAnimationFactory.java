@@ -35,6 +35,8 @@ public class GameAnimationFactory {
 				/* animation time= */3000, GameState.CONTROL));
 		setAnimation(GameAnimationType.BLOCK_FALL, new FreeFallAnimation(
 				/* animation time= */0, GameState.DELETE));
+		setAnimation(GameAnimationType.BLOCK_DELETE, new BlockDeleteAnimation(
+				/* animation time= */600, GameState.FALL));
 	}
 	
 	/**

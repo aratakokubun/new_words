@@ -5,9 +5,10 @@ public enum GameState {
 	PAUSE (1),
 	ANIMATION (2),
 	DELETE(3),
-	RELEASE_NEXT(4),
-	CONTROL(5),
-	NONE (6),
+	FALL(4),
+	RELEASE_NEXT(5),
+	CONTROL(6),
+	NONE (7),
 	;
 	
 	private int priority;

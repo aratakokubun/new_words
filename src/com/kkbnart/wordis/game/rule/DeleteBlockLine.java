@@ -17,20 +17,20 @@ public class DeleteBlockLine {
 	 * 
 	 * @param matrix 	Matrix form of the board blocks
 	 * @param word		Word to search
-	 * @return Set of deleted block id
+	 * @return Set of deleted blocks
 	 */
-	public static Set<Integer> deleteWordLine(final Block[][] matrix, final String word, final int order) {
-		Set<Integer> deletedIds = new HashSet<Integer>();
+	public static Set<Block> deleteWordLine(final Block[][] matrix, final String word, final int order) {
+		Set<Block> deletedBlocks = new HashSet<Block>();
 
 		// TODO
 		// count how many times each id is selected with different direction. (count 1 for multiple times in same direction)
 		
-		deletedIds.addAll(deleteVerticalWordLine(matrix, word, order));
-		deletedIds.addAll(deleteHorizontalWordLine(matrix, word, order));
-		deletedIds.addAll(deleteLeftDiagonalWordLine(matrix, word, order));
-		deletedIds.addAll(deleteRightDiagonalWordLine(matrix, word, order));
+		deletedBlocks.addAll(deleteVerticalWordLine(matrix, word, order));
+		deletedBlocks.addAll(deleteHorizontalWordLine(matrix, word, order));
+		deletedBlocks.addAll(deleteLeftDiagonalWordLine(matrix, word, order));
+		deletedBlocks.addAll(deleteRightDiagonalWordLine(matrix, word, order));
 		
-		return deletedIds;
+		return deletedBlocks;
 	}
 	
 	/**
@@ -41,11 +41,11 @@ public class DeleteBlockLine {
 	 * @param order		1  : Right order of {@code word} is allowed. <br>
 	 * 					-1 : Inverse order of {@code word} is allowed. <br>
 	 * 					0  : Both are allowed. <br>
-	 * @return Set of deleted block id
+	 * @return Set of deleted blocks
 	 */
-	public static Set<Integer> deleteVerticalWordLine(final Block[][] matrix,
+	public static Set<Block> deleteVerticalWordLine(final Block[][] matrix,
 			final String word, final int order) {
-		Set<Integer> deletedBlockIds = new HashSet<Integer>();
+		final Set<Block> deletedBlocks = new HashSet<Block>();
 		
 		for (int col = 0; col < matrix[0].length; col++) {
 			// Create a sequence of characters of this row
@@ -59,7 +59,7 @@ public class DeleteBlockLine {
 				Set<Integer> indices = searchWord(colWordSequence, word);
 				for (int index : indices) {
 					for (int i = 0; i < word.length(); i++) {
-						deletedBlockIds.add(matrix[index+i][col].getId());
+						deletedBlocks.add(matrix[index+i][col]);
 					}
 				}
 			}
@@ -69,12 +69,12 @@ public class DeleteBlockLine {
 				Set<Integer> inverseIndices = searchWord(reversedSequence, word);
 				for (int index : inverseIndices) {
 					for (int i = 0; i < word.length(); i++) {
-						deletedBlockIds.add(matrix[(matrix.length-1) - (index+i)][col].getId());
+						deletedBlocks.add(matrix[(matrix.length-1) - (index+i)][col]);
 					}
 				}
 			}
 		}
-		return deletedBlockIds;
+		return deletedBlocks;
 	}
 
 	/**
@@ -87,9 +87,9 @@ public class DeleteBlockLine {
 	 * 					0  : Both are allowed. <br>
 	 * @return Set of deleted block id
 	 */
-	public static Set<Integer> deleteHorizontalWordLine(final Block[][] matrix,
+	public static Set<Block> deleteHorizontalWordLine(final Block[][] matrix,
 			final String word, final int order) {
-		Set<Integer> deletedBlockIds = new HashSet<Integer>();
+		final Set<Block> deletedBlocks = new HashSet<Block>();
 		
 		for (Block[] rowBlocks : matrix) {
 			// Create a sequence of characters of this row
@@ -103,7 +103,7 @@ public class DeleteBlockLine {
 				Set<Integer> indices = searchWord(rowWordSequence, word);
 				for (int index : indices) {
 					for (int i = 0; i < word.length(); i++) {
-						deletedBlockIds.add(rowBlocks[index+i].getId());
+						deletedBlocks.add(rowBlocks[index+i]);
 					}
 				}
 			}
@@ -113,12 +113,12 @@ public class DeleteBlockLine {
 				Set<Integer> inverseIndices = searchWord(reversedSequence, word);
 				for (int index : inverseIndices) {
 					for (int i = 0; i < word.length(); i++) {
-						deletedBlockIds.add(rowBlocks[(rowBlocks.length-1) - (index+i)].getId());
+						deletedBlocks.add(rowBlocks[(rowBlocks.length-1) - (index+i)]);
 					}
 				}
 			}
 		}
-		return deletedBlockIds;
+		return deletedBlocks;
 	}
 	
 	/**
@@ -131,9 +131,9 @@ public class DeleteBlockLine {
 	 * 					0  : Both are allowed. <br>
 	 * @return Set of deleted block id
 	 */
-	public static Set<Integer> deleteLeftDiagonalWordLine(
+	public static Set<Block> deleteLeftDiagonalWordLine(
 			final Block[][] matrix, final String word, final int order) {
-		Set<Integer> deletedBlockIds = new HashSet<Integer>();
+		final Set<Block> deletedBlocks = new HashSet<Block>();
 		
 		for (int row = word.length()-1; row < matrix.length; row++) {
 			// Maximum cells for the diagonal row
@@ -149,7 +149,7 @@ public class DeleteBlockLine {
 				Set<Integer> indices = searchWord(rowWordSequence, word);
 				for (int index : indices) {
 					for (int i = 0; i < word.length(); i++) {
-						deletedBlockIds.add(matrix[row-(index+i)][index+i].getId());
+						deletedBlocks.add(matrix[row-(index+i)][index+i]);
 					}
 				}
 			}
@@ -161,12 +161,12 @@ public class DeleteBlockLine {
 					for (int i = 0; i < word.length(); i++) {
 						final int deleteRow = (row-(maxCol-1))+(index+i);
 						final int deleteCol = (maxCol-1)-(index+i);
-						deletedBlockIds.add(matrix[deleteRow][deleteCol].getId());
+						deletedBlocks.add(matrix[deleteRow][deleteCol]);
 					}
 				}
 			}
 		}
-		return deletedBlockIds;
+		return deletedBlocks;
 	}
 	
 	/**
@@ -179,9 +179,9 @@ public class DeleteBlockLine {
 	 * 					0  : Both are allowed. <br>
 	 * @return Set of deleted block id
 	 */
-	public static Set<Integer> deleteRightDiagonalWordLine(
+	public static Set<Block> deleteRightDiagonalWordLine(
 			final Block[][] matrix, final String word, final int order) {
-		Set<Integer> deletedBlockIds = new HashSet<Integer>();
+		final Set<Block> deletedBlocks = new HashSet<Block>();
 		
 		for (int row = 0; row < matrix.length+1 - word.length(); row++) {
 			// Maximum cells for the diagonal row
@@ -197,7 +197,7 @@ public class DeleteBlockLine {
 				Set<Integer> indices = searchWord(rowWordSequence, word);
 				for (int index : indices) {
 					for (int i = 0; i < word.length(); i++) {
-						deletedBlockIds.add(matrix[row+(index+i)][index+i].getId());
+						deletedBlocks.add(matrix[row+(index+i)][index+i]);
 					}
 				}
 			}
@@ -209,12 +209,12 @@ public class DeleteBlockLine {
 					for (int i = 0; i < word.length(); i++) {
 						final int deleteRow = (row+(maxCol-1))-(index+i);
 						final int deleteCol = (maxCol-1)-(index+i);
-						deletedBlockIds.add(matrix[deleteRow][deleteCol].getId());
+						deletedBlocks.add(matrix[deleteRow][deleteCol]);
 					}
 				}
 			}
 		}
-		return deletedBlockIds;
+		return deletedBlocks;
 	}
 	
 	private static String convertBlockString(Block b) {
