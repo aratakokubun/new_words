@@ -38,7 +38,7 @@ public class FreeFallAnimation extends GameAnimation {
 	 * @return 	true	: more than a block has been added to falling block list <br>
 	 * 			false	: no blocks have been added
 	 */
-	public boolean setFallingBlocks(final Board board) {
+	public void setFallingBlocks(final Board board) {
 		fallingBlocks.clear();
 		
 		// Search for row
@@ -103,8 +103,6 @@ public class FreeFallAnimation extends GameAnimation {
 				}
 			}
 		}
-		
-		return !fallingBlocks.isEmpty();
 	}
 
 	@Override

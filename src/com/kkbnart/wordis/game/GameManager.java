@@ -1,5 +1,6 @@
 package com.kkbnart.wordis.game;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import android.view.MotionEvent;
@@ -8,6 +9,7 @@ import com.kkbnart.wordis.exception.BlockCreateException;
 import com.kkbnart.wordis.exception.InvalidParameterException;
 import com.kkbnart.wordis.exception.NoAnimationException;
 import com.kkbnart.wordis.game.animation.AnimationManager;
+import com.kkbnart.wordis.game.animation.BlockDeleteAnimation;
 import com.kkbnart.wordis.game.animation.FreeFallAnimation;
 import com.kkbnart.wordis.game.animation.GameAnimationFactory;
 import com.kkbnart.wordis.game.animation.GameAnimationType;
@@ -167,13 +169,15 @@ public class GameManager implements GameThreadManager {
 				
 		// Process according to game status
 		try {
-			System.out.println("state : " + gameState);
 			switch (gameState) {
 			case CONTROL:
-				updateOperatedBlock(elapsedMSec);
+				updateOperatedBlocks(elapsedMSec);
+				break;
+			case FALL:
+				updateFallBlocks();
 				break;
 			case DELETE:
-				updateDeleteBlock(elapsedMSec);
+				updateDeleteBlocks();
 				break;
 			case ANIMATION:
 				updateAnimation();
@@ -194,37 +198,51 @@ public class GameManager implements GameThreadManager {
 	}
 	
 	/**
-	 * Update blocks while control by the player
+	 * Update blocks while control by the player. <br>
 	 * 
 	 * @param elapsedTime	Elapsed time from previous frame
 	 */
-	private void updateOperatedBlock(final long elapsedMSec) {
+	private void updateOperatedBlocks(final long elapsedMSec) {
 		if (Collision.isContacted(board, operated)) {
-			gameState = GameState.DELETE;
+			gameState = GameState.FALL;
 		} else {
 			// Automatically update block
 			operated.autoUpdate(elapsedMSec);
 		}
 	}
 	
-	private void updateDeleteBlock(final long elapsedMSec) throws BlockCreateException, NoAnimationException {
+	/**
+	 * Update block fall. <br>
+	 * 
+	 * @throws BlockCreateException
+	 * @throws NoAnimationException
+	 */
+	private void updateFallBlocks() throws BlockCreateException, NoAnimationException {
 		// If contacted to walls or other blocks, stable the operated blocks and set next
 		board.addBlockSet(operated);
 		
-		// Delete blocks
-		final boolean isDeleteOccurred = deleteBlocks();
-
-		// Set delete animation
+		// Set fall animation
 		GameAnimationFactory factory = animationManager.getAnimationFactory();
 		FreeFallAnimation animation = (FreeFallAnimation)factory.create(GameAnimationType.BLOCK_FALL);
-		final boolean isFallingOccurred = animation.setFallingBlocks(board);
+		factory = null;
+		animation.setFallingBlocks(board);
+		animationManager.addAnimation(animation);
+		gameState = GameState.ANIMATION;
+	}
+	
+	/**
+	 * Update block delete. <br>
+	 * 
+	 * @throws BlockCreateException
+	 * @throws NoAnimationException
+	 */
+	private void updateDeleteBlocks() throws BlockCreateException, NoAnimationException {
+		// Delete blocks
+		final Set<Block> deletedBlocks = deleteBlocks();
 		
 		// If delete or fall occur, update animation
 		// Else, shift to "game over" or "release next"
-		if (isDeleteOccurred || isFallingOccurred) {
-			animationManager.addAnimation(animation);
-			gameState = GameState.ANIMATION;
-		} else {
+		if (deletedBlocks.isEmpty()) {
 			if (isGameOver()) {
 				// TODO
 				// If versus remote player, send game over message to server
@@ -235,39 +253,49 @@ public class GameManager implements GameThreadManager {
 				operated.setBlocks(next.releaseNextBlocks());
 				gameState = GameState.CONTROL;
 			}
+		} else {
+			// Set delete animation
+			GameAnimationFactory factory = animationManager.getAnimationFactory();
+			BlockDeleteAnimation animation = (BlockDeleteAnimation)factory.create(GameAnimationType.BLOCK_DELETE);
+			animation.setDeleteBlockIds(deletedBlocks);
+			animationManager.addAnimation(animation);
+			gameState = GameState.ANIMATION;
 		}
-	}
-	
-	/**
-	 * Judge game over. <br>
-	 * @return
-	 */
-	private boolean isGameOver() {
-		return board.getIsBoardStacked();
 	}
 	
 	/**
 	 * Delete blocks in board. <br>
 	 * 
-	 * @return 	true  : more than a block is deleted <br>
-	 * 			false : no blocks are deleted <br>
+	 * @return Deleted block ids
 	 */
-	private boolean deleteBlocks() {
+	private Set<Block> deleteBlocks() {
 		final Block[][] matrix = board.getMatrixedBlocks();
 		
 		final String word = blockSetFactory.getWord();
 		final int order = 0;
-		Set<Integer> deletedIds = DeleteBlockLine.deleteWordLine(matrix, word, order);
-
-		if (deletedIds.isEmpty()) {
-			return false;
-		} else {
-			// Delete specified blocks from board
-			board.deleteBlocks(deletedIds);
-			// Release ids of deleted blocks from id factory
-			BlockIdFactory.getInstance().dissociateIds(deletedIds);
-			return true;
+		final Set<Block> deletedBlocks = DeleteBlockLine.deleteWordLine(matrix, word, order);
+		
+		// Extract ids of them
+		final Set<Integer> deletedBlockIds = new HashSet<Integer>();
+		for (Block b : deletedBlocks) {
+			deletedBlockIds.add(b.getId());
 		}
+
+		// Delete specified blocks from board
+		board.deleteBlocks(deletedBlockIds);
+		// Release ids of deleted blocks from id factory
+		BlockIdFactory.getInstance().dissociateIds(deletedBlockIds);
+		
+		return deletedBlocks;
+	}
+	
+	/**
+	 * Judge if game is over. <br>
+	 * @return true:	game is over <br>
+	 * 		   false:	game is not over <br>	
+	 */
+	private boolean isGameOver() {
+		return board.getIsBoardStacked();
 	}
 	
 	/**

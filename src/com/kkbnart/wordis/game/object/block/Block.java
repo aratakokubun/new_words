@@ -75,7 +75,8 @@ public class Block {
 	}
 	
 	/**
-	 * Draw bitmap image of the block
+	 * Draw bitmap image of the block.<br>
+	 * 
 	 * @param canvas	Canvas of surface view
 	 * @param paint		Paint of surface view
 	 * @param board		Game board
@@ -95,6 +96,35 @@ public class Block {
 				new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight()),
 				new Rect(viewX, viewY, (int) viewX + board.getXStep(),
 						(int) viewY + board.getYStep()), paint);
+	}
+	
+	/**
+	 * Draw bitmap image of the block with specified transparency and magnificient rate.<br>
+	 * 
+	 * @param canvas	Canvas of surface view
+	 * @param paint		Paint of surface view
+	 * @param board		Game board
+	 * @param mag
+	 */
+	public void drawImage(final Canvas canvas, final Paint paint,
+			final Board board, final float mag) {
+		// Draw block image
+		drawImage(canvas, paint, color.getImage(), board, mag);
+		// Draw character image
+		drawImage(canvas, paint, character.getImage(), board, mag);
+	}
+	
+	private void drawImage(final Canvas canvas, final Paint paint, final Bitmap bitmap,
+			final Board board, final float mag) {
+		final int width  = (int)(board.getXStep() * mag);
+		final int height = (int)(board.getYStep() * mag);
+		final int viewX  = (int) (x * board.getXStep()) + board.getX() - (width - board.getXStep())/2;
+		final int viewY  = (int) (y * board.getYStep()) + board.getY() - (height - board.getYStep())/2;
+		
+		canvas.drawBitmap(
+				bitmap,
+				new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight()),
+				new Rect(viewX, viewY, (int) viewX + width, (int) viewY + height), paint);
 	}
 	
 	public Block clone() {
