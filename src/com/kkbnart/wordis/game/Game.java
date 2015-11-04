@@ -1,7 +1,6 @@
 package com.kkbnart.wordis.game;
 
 import org.androidannotations.annotations.AfterViews;
-import org.androidannotations.annotations.CheckedChange;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.Fullscreen;
@@ -19,7 +18,6 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.CompoundButton;
 
 import com.kkbnart.wordis.Constants;
 import com.kkbnart.wordis.R;
@@ -61,6 +59,9 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 
 		// FIXME
 		// These variables are passed from menu with static class or Intent
+		// FIXME
+		// Prepare multiple game managers for multiple players
+		// And use common game thread 
 		manager = new GameManager(this, WordisPlayer.MY_PLAYER);
 		
 		// FIXME
@@ -106,8 +107,7 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 		GameTypeDefinition.getInstance().readJson(gameTypeName, this);
 		MoveAmount.getInstance().readJson(moveAmountName, this);
 		ScoreCalculator.getInstance().readJson(scorePatternName, this);
-		System.out.println("here");
-	}
+ 	}
 	
 	/**
 	 * @see {@link IGameActivity#surfaceSizeChanged(int, int)}
@@ -246,9 +246,9 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 	};
 
 	@Override
-	public void terminateSingle(PlayerStatus myStatus) {
+	public void terminateSingle(CurrentGameStats currentGameStats) {
 		Dialog dialog = new SingleGameFinishDialog(this, retryClickListener,
-				exitClickListener, myStatus.getScore(), myStatus.getMaxChain());
+				exitClickListener, currentGameStats.getScore(), currentGameStats.getMaxChain());
 		dialog.show();
 	}
 

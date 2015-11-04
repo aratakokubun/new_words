@@ -13,9 +13,9 @@ public interface IGameTerminate {
 	/**
 	 * Terminate game for single player game. <br>
 	 * 
-	 * @param myStatus	Status of this player
+	 * @param currentGameStats Statics of the current game
 	 */
-	public abstract void terminateSingle(final PlayerStatus myStatus);
+	public abstract void terminateSingle(final CurrentGameStats currentGameStats);
 
 	/**
 	 * Terminate game for versus CPU game. <br>

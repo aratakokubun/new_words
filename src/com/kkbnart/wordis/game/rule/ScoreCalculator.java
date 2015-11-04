@@ -63,10 +63,14 @@ public class ScoreCalculator {
 	 * @return Calculated score
 	 */
 	public int calcDeleteScore(final Set<Integer> deleteIds, final String word, final int chain, final int sumBlocks) {
+		final int number = deleteIds.size() - word.length();
+		return calcDeleteScore(number, chain, sumBlocks);
+	}
+	
+	public int calcDeleteScore(final int number, final int chain, final int sumBlocks) {
 		// A = sum * sumBonus
 		// B = numberBonus.get(number) + chainBonus.get(chain)
 		// score(chain) = A * Math.max(B, 1)
-		final int number = deleteIds.size() - word.length();
 		return sumBlocks * sumBonus * Math.min(getNumberBonus(number) + getChainBonus(chain), 1);
 	}
 	
