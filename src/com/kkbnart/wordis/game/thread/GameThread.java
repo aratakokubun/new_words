@@ -1,19 +1,20 @@
 package com.kkbnart.wordis.game.thread;
 
+import java.util.HashSet;
+
 import android.os.Handler;
 import android.os.Message;
 
 public class GameThread implements Runnable {
-	private GameThreadManager manager;
+	private HashSet<GameThreadManager> managers = new HashSet<GameThreadManager>();
 	
 	private Thread thread = null;
 	
 	// Sleep time [ms]
 	private static final long SLEEP = 25;
 	
-	public GameThread(final GameThreadManager manager) {
-		super();
-		this.manager = manager;
+	public void addGameThreadManager(final GameThreadManager manager) {
+		managers.add(manager);
 	}
 	
 	public void startThread() {
@@ -35,7 +36,7 @@ public class GameThread implements Runnable {
 	public void run() {
 		final long sleepTime = 5;
 		long prevTime = System.currentTimeMillis();
-		while (manager.continueGame()) {
+		while (continueGame()) {
 			// Wait for SLEEP [ms]
 			long elapsedTime = System.currentTimeMillis() - prevTime;
 			while (elapsedTime < SLEEP) {
@@ -50,10 +51,25 @@ public class GameThread implements Runnable {
 			// Update previous time
 			prevTime = System.currentTimeMillis();
 			
-			manager.invokeMainProcess(elapsedTime);
+			invokeMainProcess(elapsedTime);
 		}
 		
 		handleFinishGame();
+	}
+	
+	private boolean continueGame() {
+		for (GameThreadManager manager : managers) {
+			if (!manager.continueGame()) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	private void invokeMainProcess(final long elapsedTime) {
+		for (GameThreadManager manager : managers) {
+			manager.invokeMainProcess(elapsedTime);			
+		}
 	}
 	
 	public void handleFinishGame() {
@@ -68,10 +84,16 @@ public class GameThread implements Runnable {
 		public boolean handleMessage(Message msg) {
 			switch (msg.what) {
 			case FINISH_GAME:
-				manager.finishGame();
+				finishGame();
 				return true;
 			}
 			return false;
 		}
 	});
+	
+	private void finishGame() {
+		for (GameThreadManager manager : managers) {
+			manager.finishGame();
+		}
+	}
 }

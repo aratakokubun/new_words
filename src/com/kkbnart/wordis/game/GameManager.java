@@ -38,12 +38,12 @@ public class GameManager implements GameThreadManager {
 	private BlockSetFactory blockSetFactory = null;
 	// Manage and execute animations
 	private AnimationManager animationManager = null;
-	
+
 	// Interface called on terminating game
-	IGameTerminate gameTerminate;
+	private IGameTerminate gameTerminate;
 	
 	// Game thread
-	GameThread gameThread = null;
+	private GameThread gameThread = null;
 	
 	// Game type
 	private GameType gameType;
@@ -55,13 +55,11 @@ public class GameManager implements GameThreadManager {
 	// Preserve game statics while current game
 	private CurrentGameStats stats;
 	
-	public GameManager(IGameTerminate gameTerminate, final WordisPlayer player) {
+	public GameManager(final IGameTerminate gameTerminate, final GameThread gameThread, final WordisPlayer player) {
 		this.gameTerminate = gameTerminate;
-		// FIXME
-		// With two players or coms, share thread
-		this.gameThread = new GameThread(this);
-		this.player = WordisPlayer.MY_PLAYER;
-		
+		this.gameThread = gameThread;
+		this.gameThread.addGameThreadManager(this);
+		this.player = player;
 		this.stats = new CurrentGameStats();
 	}
 	
@@ -93,9 +91,6 @@ public class GameManager implements GameThreadManager {
 		// Set start animation
 		animationManager.addAnimation(GameAnimationType.GAME_START);
 		gameState = GameState.ANIMATION;
-		
-		// Start game thread
-		gameThread.startThread();
 	}
 	
 	/**
@@ -247,7 +242,7 @@ public class GameManager implements GameThreadManager {
 				gameState = GameState.ANIMATION;
 			} else {
 				operated.setBlocks(next.releaseNextBlocks());
-				stats.clearStats();
+				stats.endChain();
 				gameState = GameState.CONTROL;
 			}
 		} else {

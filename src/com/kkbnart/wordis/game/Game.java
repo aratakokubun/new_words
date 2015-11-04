@@ -1,5 +1,8 @@
 package com.kkbnart.wordis.game;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
@@ -33,6 +36,7 @@ import com.kkbnart.wordis.game.player.PlayerStatus;
 import com.kkbnart.wordis.game.player.WordisPlayer;
 import com.kkbnart.wordis.game.rule.MoveAmount;
 import com.kkbnart.wordis.game.rule.ScoreCalculator;
+import com.kkbnart.wordis.game.thread.GameThread;
 import com.kkbnart.wordis.game.util.Direction;
 import com.kkbnart.wordis.menu.Menu;
 
@@ -50,9 +54,11 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 	GameSurfaceView gsv;
 	
 	// Game manager to proceed everything except control with user interface
-	private GameManager manager;
+	private Set<GameManager> managers = new HashSet<GameManager>();
 	// Game type of this game
 	private GameType type;
+	// Game thread
+	private GameThread gameThread = null;
 	
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -61,16 +67,15 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 		// These variables are passed from menu with static class or Intent
 		// FIXME
 		// Prepare multiple game managers for multiple players
-		// And use common game thread 
-		manager = new GameManager(this, WordisPlayer.MY_PLAYER);
+		// And use common game thread
+		gameThread = new GameThread();
+		managers.add(new GameManager(this, gameThread, /*FIXME*/WordisPlayer.MY_PLAYER));
 		
 		// FIXME
 		// These variables are passed from menu with static class or Intent
 		// Load property files
 		try {
 			loadGameProperties("test", "downFall", "normal");
-			// manager.setBlockSetFactory(new BlockSetFactory(this, "normal", "TEST"));
-			manager.setBlockSetFactory(new BlockSetFactory(this, "short", "TEST"));
 		} catch (BlockCreateException | LoadPropertyException e) {
 			forceFinishGame(e);
 			return;
@@ -91,22 +96,34 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 	 * @param e Exception occurred in methods which call this
 	 */
 	private void forceFinishGame(Exception e) {
-		manager.interruptGame();
-		// TODO
-		// finish activity
-		System.exit(RESULT_OK);
+		for (GameManager manager : managers) {
+			try {
+				manager.interruptGame();
+			} catch (NullPointerException ne) {
+				// Dismiss exception because force termination
+			}
+		}
+		finish();
 	}
 	
 	/**
 	 * Load game properties from files. <br>
 	 * 
-	 * @throws LoadPropertyException Can not load property files
+	 * @throws LoadPropertyException	Can not load property files
+	 * @throws BlockCreateException		Can not create new block set
 	 */
 	private void loadGameProperties(final String gameTypeName,
-			final String moveAmountName, final String scorePatternName) throws LoadPropertyException {
+			final String moveAmountName, final String scorePatternName) throws LoadPropertyException, BlockCreateException {
 		GameTypeDefinition.getInstance().readJson(gameTypeName, this);
 		MoveAmount.getInstance().readJson(moveAmountName, this);
 		ScoreCalculator.getInstance().readJson(scorePatternName, this);
+		
+		for (GameManager manager : managers) {
+			// FIXME
+			// Use common block set factory
+			// manager.setBlockSetFactory(new BlockSetFactory(this, "normal", "TEST"));
+			manager.setBlockSetFactory(new BlockSetFactory(this, "short", "TEST"));
+		}
  	}
 	
 	/**
@@ -115,7 +132,9 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 	@Override
 	public void surfaceSizeChanged(final int width, final int height) {
 		try {
-			manager.surfaceSizeChanged(width, height);
+			for (GameManager manager : managers) {
+				manager.surfaceSizeChanged(width, height);
+			}
 		} catch (BlockCreateException | InvalidParameterException | NoAnimationException e) {
 			if (Constants.D) Log.e(TAG, "[width:" + width + ", height:" + height + "] are invalid.");
 			forceFinishGame(e);
@@ -125,16 +144,21 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 	@AfterViews
 	protected void setupView(){
 		gsv.setGameActivity(this);
-		manager.setGameSurfaceView(gsv);
+		for (GameManager manager : managers) {
+			manager.setGameSurfaceView(gsv);
+		}
 		startGame();
 	}
 	
 	private void startGame() {
 		try {
-			manager.startGame(type);
+			for (GameManager manager : managers) {
+				manager.startGame(type);
+			}
 		} catch (BlockCreateException | NoAnimationException e) {
 			forceFinishGame(e);
 		}
+		gameThread.startThread();
 	}
 	
 	private void finishGame() {
@@ -167,7 +191,9 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 			Dialog dialog = new GameMenuDialog(this, retryClickListener,
 					exitClickListener, dialogCancelListener, true);
 			dialog.show();
-			manager.suspendGame();
+			for (GameManager manager : managers) {
+				manager.suspendGame();
+			}
 			break;
 		default:
 			break;
@@ -179,7 +205,9 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 	 */
 	@Override
 	public void onSurfaceTouched(MotionEvent event) {
-		manager.onSurfaceTouched(event);
+		for (GameManager manager : managers) {
+			manager.onSurfaceTouched(event);
+		}
 	}
 	
 	@Click(R.id.leftButton)
@@ -201,16 +229,22 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 	
 	private void moveBlock(final int dirId) {
 		PointF p = MoveAmount.getInstance().getMove(dirId);
-		manager.moveBlock(p.x, p.y);
+		for (GameManager manager : managers) {
+			manager.moveBlock(p.x, p.y);
+		}
 	}
 	
 	@Click(R.id.counterClockwiseButton)
 	protected void counterClockwiseButtonClick(final View view) {
-		manager.rotateBlock(false);
+		for (GameManager manager : managers) {
+			manager.rotateBlock(false);
+		}
 	}
 	@Click(R.id.clockwiseButton)
 	protected void clockwiseButtonClick(final View view) {
-		manager.rotateBlock(true);
+		for (GameManager manager : managers) {
+			manager.rotateBlock(true);
+		}
 	}
 	
 	@Click(R.id.menuButton)
@@ -218,7 +252,9 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 		Dialog dialog = new GameMenuDialog(this, retryClickListener,
 				exitClickListener, dialogCancelListener, /*cancel button enabled = */ true);
 		dialog.show();
-		manager.suspendGame();
+		for (GameManager manager : managers) {
+			manager.suspendGame();
+		}
 	}
 	
 	// On Click Listener for game menu dialog
@@ -241,7 +277,9 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 	private OnCancelListener dialogCancelListener = new OnCancelListener() {
 		@Override
 		public void onCancel(DialogInterface dialog) {
-			manager.resumeGame();
+			for (GameManager manager : managers) {
+				manager.resumeGame();
+			}
 		}
 	};
 
