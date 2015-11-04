@@ -3,7 +3,6 @@ package com.kkbnart.wordis.game;
 import java.util.HashSet;
 import java.util.Set;
 
-import android.util.SparseArray;
 import android.view.MotionEvent;
 
 import com.kkbnart.wordis.exception.BlockCreateException;
@@ -20,11 +19,11 @@ import com.kkbnart.wordis.game.object.block.BlockIdFactory;
 import com.kkbnart.wordis.game.object.block.BlockSetFactory;
 import com.kkbnart.wordis.game.object.block.NextBlocks;
 import com.kkbnart.wordis.game.object.block.OperatedBlocks;
-import com.kkbnart.wordis.game.player.PlayerStatus;
-import com.kkbnart.wordis.game.player.PlayerStatusMap;
 import com.kkbnart.wordis.game.player.WordisPlayer;
 import com.kkbnart.wordis.game.rule.Collision;
 import com.kkbnart.wordis.game.rule.DeleteBlockLine;
+import com.kkbnart.wordis.game.thread.GameThread;
+import com.kkbnart.wordis.game.thread.GameThreadManager;
 
 public class GameManager implements GameThreadManager {
 	// Game board
@@ -39,8 +38,6 @@ public class GameManager implements GameThreadManager {
 	private BlockSetFactory blockSetFactory = null;
 	// Manage and execute animations
 	private AnimationManager animationManager = null;
-	// Players' status
-	private PlayerStatusMap playerStatusMap = new PlayerStatusMap();
 	
 	// Interface called on terminating game
 	IGameTerminate gameTerminate;
@@ -55,12 +52,17 @@ public class GameManager implements GameThreadManager {
 	// Wordis player type
 	private WordisPlayer player;
 	
+	// Preserve game statics while current game
+	private CurrentGameStats stats;
+	
 	public GameManager(IGameTerminate gameTerminate, final WordisPlayer player) {
 		this.gameTerminate = gameTerminate;
 		// FIXME
 		// With two players or coms, share thread
 		this.gameThread = new GameThread(this);
 		this.player = WordisPlayer.MY_PLAYER;
+		
+		this.stats = new CurrentGameStats();
 	}
 	
 	public void setGameSurfaceView(final GameSurfaceView gsv) {
@@ -78,21 +80,15 @@ public class GameManager implements GameThreadManager {
 	 * @throws NoAnimationException Can not add animation 
 	 */
 	public void startGame(final GameType type) throws BlockCreateException, NoAnimationException {
+		gameType = type;
+		
 		// Set next blocks prepared to start
 		next.setFactory(blockSetFactory);
 		final GameTypeDefinition gtd = GameTypeDefinition.getInstance();
 		next.initializeBlockSet(gtd.nextSize);
 		operated.setBlocks(next.releaseNextBlocks());
-
-		gameType = type;
-		
-		// TODO
-		// Initialize player status
-		final PlayerStatus status = new PlayerStatus(0, "temp", 0, 0, 0, 0, 0, 0);
-		playerStatusMap.put(player, status);
-		
-		// Refresh board
 		board.clearBlocks();
+		stats.clearStats();
 
 		// Set start animation
 		animationManager.addAnimation(GameAnimationType.GAME_START);
@@ -251,6 +247,7 @@ public class GameManager implements GameThreadManager {
 				gameState = GameState.ANIMATION;
 			} else {
 				operated.setBlocks(next.releaseNextBlocks());
+				stats.clearStats();
 				gameState = GameState.CONTROL;
 			}
 		} else {
@@ -259,6 +256,7 @@ public class GameManager implements GameThreadManager {
 			BlockDeleteAnimation animation = (BlockDeleteAnimation)factory.create(GameAnimationType.BLOCK_DELETE);
 			animation.setDeleteBlockIds(deletedBlocks);
 			animationManager.addAnimation(animation);
+			stats.updateScore(deletedBlocks.size());
 			gameState = GameState.ANIMATION;
 		}
 	}
@@ -302,6 +300,9 @@ public class GameManager implements GameThreadManager {
 	 * Update view animation and take game actions after the animation. <br>
 	 */
 	private void updateAnimation() {
+		// FIXME
+		// Divide process to update phase and draw phase,
+		// and divide drawing board and drawing superimposed text
 		if (animationManager.hasAnimation()) {
 			gameState = gsv.drawAnimation(animationManager, board, next);
 		}
@@ -334,8 +335,8 @@ public class GameManager implements GameThreadManager {
 		case TEST:
 		case PRACTICE:
 		case SINGLE:
-			final PlayerStatus myStatus = playerStatusMap.get(WordisPlayer.MY_PLAYER);
-			gameTerminate.terminateSingle(myStatus);
+			// FIXME
+			gameTerminate.terminateSingle(stats);
 			break;
 		case VS_CPU:
 			// TODO

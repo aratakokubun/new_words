@@ -1,7 +1,6 @@
 package com.kkbnart.wordis.game;
 
 import org.androidannotations.annotations.AfterViews;
-import org.androidannotations.annotations.CheckedChange;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.Fullscreen;
@@ -19,7 +18,6 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.CompoundButton;
 
 import com.kkbnart.wordis.Constants;
 import com.kkbnart.wordis.R;
@@ -34,6 +32,7 @@ import com.kkbnart.wordis.game.object.block.BlockSetFactory;
 import com.kkbnart.wordis.game.player.PlayerStatus;
 import com.kkbnart.wordis.game.player.WordisPlayer;
 import com.kkbnart.wordis.game.rule.MoveAmount;
+import com.kkbnart.wordis.game.rule.ScoreCalculator;
 import com.kkbnart.wordis.game.util.Direction;
 import com.kkbnart.wordis.menu.Menu;
 
@@ -60,14 +59,18 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 
 		// FIXME
 		// These variables are passed from menu with static class or Intent
+		// FIXME
+		// Prepare multiple game managers for multiple players
+		// And use common game thread 
 		manager = new GameManager(this, WordisPlayer.MY_PLAYER);
 		
 		// FIXME
 		// These variables are passed from menu with static class or Intent
 		// Load property files
 		try {
-			loadGameProperties("test", "downFall");
-			manager.setBlockSetFactory(new BlockSetFactory(this, "normal", "TEST"));
+			loadGameProperties("test", "downFall", "normal");
+			// manager.setBlockSetFactory(new BlockSetFactory(this, "normal", "TEST"));
+			manager.setBlockSetFactory(new BlockSetFactory(this, "short", "TEST"));
 		} catch (BlockCreateException | LoadPropertyException e) {
 			forceFinishGame(e);
 			return;
@@ -100,10 +103,11 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 	 * @throws LoadPropertyException Can not load property files
 	 */
 	private void loadGameProperties(final String gameTypeName,
-			final String moveAmountName) throws LoadPropertyException {
+			final String moveAmountName, final String scorePatternName) throws LoadPropertyException {
 		GameTypeDefinition.getInstance().readJson(gameTypeName, this);
 		MoveAmount.getInstance().readJson(moveAmountName, this);
-	}
+		ScoreCalculator.getInstance().readJson(scorePatternName, this);
+ 	}
 	
 	/**
 	 * @see {@link IGameActivity#surfaceSizeChanged(int, int)}
@@ -209,9 +213,8 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 		manager.rotateBlock(true);
 	}
 	
-	@CheckedChange(R.id.menuButton)
-	protected void menuButtonCheckedChange(final CompoundButton button,
-			final Boolean isChecked) {		
+	@Click(R.id.menuButton)
+	protected void menuButtonCClick(final View view) {		
 		Dialog dialog = new GameMenuDialog(this, retryClickListener,
 				exitClickListener, dialogCancelListener, /*cancel button enabled = */ true);
 		dialog.show();
@@ -243,9 +246,9 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 	};
 
 	@Override
-	public void terminateSingle(PlayerStatus myStatus) {
+	public void terminateSingle(CurrentGameStats currentGameStats) {
 		Dialog dialog = new SingleGameFinishDialog(this, retryClickListener,
-				exitClickListener, myStatus.getScore(), myStatus.getMaxChain());
+				exitClickListener, currentGameStats.getScore(), currentGameStats.getMaxChain());
 		dialog.show();
 	}
 
