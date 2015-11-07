@@ -14,6 +14,8 @@ import com.kkbnart.wordis.game.animation.FreeFallAnimation;
 import com.kkbnart.wordis.game.animation.GameAnimationFactory;
 import com.kkbnart.wordis.game.animation.GameAnimationType;
 import com.kkbnart.wordis.game.board.Board;
+import com.kkbnart.wordis.game.layout.LayoutDefinition;
+import com.kkbnart.wordis.game.layout.ViewLayout;
 import com.kkbnart.wordis.game.object.block.Block;
 import com.kkbnart.wordis.game.object.block.BlockIdFactory;
 import com.kkbnart.wordis.game.object.block.BlockSetFactory;
@@ -103,41 +105,42 @@ public class GameManager implements GameThreadManager {
 	 * @throws NoAnimationException 
 	 */
 	public void surfaceSizeChanged(final int width, final int height) throws BlockCreateException, InvalidParameterException, NoAnimationException {
-		final GameTypeDefinition gtd = GameTypeDefinition.getInstance();
+		final ViewLayout vl = ViewLayout.getInstance();
+		final LayoutDefinition ld = vl.getLayoutDefinition(player.getSide());
 		
 		// Change board size depends on view size
-		final int x = (int)(gtd.boardXRate * width);
-		final int y = (int)(gtd.boardYRate * height);
-		final int w = (int)(gtd.boardWRate * width);
-		final int h = (int)(gtd.boardHRate * height);
+		final int x = (int)(ld.boardXRate * width);
+		final int y = (int)(ld.boardYRate * height);
+		final int w = (int)(vl.boardWRate * width);
+		final int h = (int)(vl.boardHRate * height);
 		if (board == null) {
-			board = new Board(x, y, w, h, gtd.boardCol, gtd.boardRow, gtd.boardCollisionX, gtd.boardCollisionY,
-					gtd.boardCollisionCol, gtd.boardCollisionRow, gtd.boardStackCellX, gtd.boardStackCellY);
+			board = new Board(x, y, w, h, vl.boardCol, vl.boardRow, vl.boardCollisionX, vl.boardCollisionY,
+					vl.boardCollisionCol, vl.boardCollisionRow, vl.boardStackCellX, vl.boardStackCellY);
 		} else {
 			board.updateBoardArea(x, y, w, h);
-			board.updateBoardSize(gtd.boardCol, gtd.boardRow, gtd.boardCollisionX, gtd.boardCollisionY,
-					gtd.boardCollisionCol, gtd.boardCollisionRow, gtd.boardStackCellX, gtd.boardStackCellY);
+			board.updateBoardSize(vl.boardCol, vl.boardRow, vl.boardCollisionX, vl.boardCollisionY,
+					vl.boardCollisionCol, vl.boardCollisionRow, vl.boardStackCellX, vl.boardStackCellY);
 		}
 		
 		// Create operated block set
 		if (operated == null) {
-			operated = new OperatedBlocks(gtd.operatedX, gtd.operatedY);
+			operated = new OperatedBlocks(vl.operatedX, vl.operatedY);
 		} else {
-			operated.setRoot(gtd.operatedX, gtd.operatedY);
+			operated.setRoot(vl.operatedX, vl.operatedY);
 		}
 		
 		// Create next block set
 		if (next == null) {
-			next = new NextBlocks(gtd.nextX, gtd.nextY, gtd.nextMarginX, gtd.nextMarginY);
+			next = new NextBlocks(ld.nextX, ld.nextY, vl.nextMarginX, vl.nextMarginY);
 		} else {
-			next.setCoordinate(gtd.nextX, gtd.nextY, gtd.nextMarginX, gtd.nextMarginY);
+			next.setCoordinate(ld.nextX, ld.nextY, vl.nextMarginX, vl.nextMarginY);
 		}
 		
 		// Create animation manager
 		if (animationManager == null) {
-			animationManager = new AnimationManager(player, gtd.boardCol, gtd.boardRow, w, h);
+			animationManager = new AnimationManager(player, vl.boardCol, vl.boardRow, w, h);
 		} else {
-			animationManager.onSurfaceChange(player, gtd.boardCol, gtd.boardRow, w, h);
+			animationManager.onSurfaceChange(player, vl.boardCol, vl.boardRow, w, h);
 		}
 	}
 	
@@ -307,7 +310,7 @@ public class GameManager implements GameThreadManager {
 	 * Update view graphics. <br>
 	 */
 	private void updateView() {
-		gsv.draw(board, operated, next);
+		gsv.draw(board, operated, next, stats);
 	}
 	
 	/**

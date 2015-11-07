@@ -31,6 +31,7 @@ import com.kkbnart.wordis.exception.NoAnimationException;
 import com.kkbnart.wordis.game.dialog.DialogDismissableOnClickListener;
 import com.kkbnart.wordis.game.dialog.GameMenuDialog;
 import com.kkbnart.wordis.game.dialog.SingleGameFinishDialog;
+import com.kkbnart.wordis.game.layout.ViewLayout;
 import com.kkbnart.wordis.game.object.block.BlockSetFactory;
 import com.kkbnart.wordis.game.player.PlayerStatus;
 import com.kkbnart.wordis.game.player.WordisPlayer;
@@ -67,9 +68,9 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 		// These variables are passed from menu with static class or Intent
 		// FIXME
 		// Prepare multiple game managers for multiple players
-		// And use common game thread
 		gameThread = new GameThread();
 		managers.add(new GameManager(this, gameThread, /*FIXME*/WordisPlayer.MY_PLAYER));
+		managers.add(new GameManager(this, gameThread, /*FIXME*/WordisPlayer.COM));
 		
 		// FIXME
 		// These variables are passed from menu with static class or Intent
@@ -114,7 +115,7 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 	 */
 	private void loadGameProperties(final String gameTypeName,
 			final String moveAmountName, final String scorePatternName) throws LoadPropertyException, BlockCreateException {
-		GameTypeDefinition.getInstance().readJson(gameTypeName, this);
+		ViewLayout.getInstance().readJson(gameTypeName, this);
 		MoveAmount.getInstance().readJson(moveAmountName, this);
 		ScoreCalculator.getInstance().readJson(scorePatternName, this);
 		
@@ -228,6 +229,8 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 	}
 	
 	private void moveBlock(final int dirId) {
+		// FIXME
+		// Specify manager to operate
 		PointF p = MoveAmount.getInstance().getMove(dirId);
 		for (GameManager manager : managers) {
 			manager.moveBlock(p.x, p.y);
@@ -236,12 +239,16 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 	
 	@Click(R.id.counterClockwiseButton)
 	protected void counterClockwiseButtonClick(final View view) {
+		// FIXME
+		// Specify manager to operate
 		for (GameManager manager : managers) {
 			manager.rotateBlock(false);
 		}
 	}
 	@Click(R.id.clockwiseButton)
 	protected void clockwiseButtonClick(final View view) {
+		// FIXME
+		// Specify manager to operate
 		for (GameManager manager : managers) {
 			manager.rotateBlock(true);
 		}

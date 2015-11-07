@@ -37,14 +37,18 @@ public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 	 * @param board	Current board
 	 * @param ob	Operated blocks
 	 * @param nb	Next blocks
+	 * @param stats	Current game statics
 	 */
-	public void draw(final Board board, final OperatedBlocks ob, final NextBlocks nb) {
+	public void draw(final Board board, final OperatedBlocks ob,
+			final NextBlocks nb, final CurrentGameStats stats) {
 		final SurfaceHolder holder = getHolder();
 		Canvas c = null;
 		try {
 			// Lock Canvas
 			c = holder.lockCanvas();
 			if (c != null) {
+				// FIXME
+				// Draw from multiple thread
 				// Clear canvas
 				c.drawColor(0, PorterDuff.Mode.CLEAR);
 				

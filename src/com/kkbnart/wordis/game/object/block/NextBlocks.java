@@ -17,6 +17,10 @@ import com.kkbnart.wordis.game.board.Board;
  */
 public class NextBlocks extends ArrayDeque<BlockSet> {
 	private static final long serialVersionUID = 1L;
+	
+	// Specify maximum number of next block sets
+	private static final int MAX_NUM = 2;
+	
 	// Root position of the next candidates
 	private float rootX, rootY;
 	// Margin between next blocks
@@ -57,7 +61,8 @@ public class NextBlocks extends ArrayDeque<BlockSet> {
 	 * @param num Stuck size
 	 * @throws BlockCreateException Can not create block
 	 */
-	public void initializeBlockSet(final int num) throws BlockCreateException {
+	public void initializeBlockSet(int num) throws BlockCreateException {
+		num = Math.max(num, MAX_NUM);
 		if (factory == null) {
 			throw new BlockCreateException();
 		} else {

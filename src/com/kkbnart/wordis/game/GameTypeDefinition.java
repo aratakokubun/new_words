@@ -26,6 +26,9 @@ import com.kkbnart.wordis.exception.LoadPropertyException;
  * @author kkbnart
  */
 public class GameTypeDefinition {
+	// FIXME
+	// adapt to multiple players
+	
 	// Singleton instance of this class
 	private static GameTypeDefinition instance = null;
 	
@@ -47,6 +50,13 @@ public class GameTypeDefinition {
 	public float nextX, nextY;
 	public float nextMarginX, nextMarginY;
 	public int nextSize;
+	
+	// Score Area
+	private static String SCORE = "score";
+	public float scoreLeftXRate, scoreLeftYRate;
+	public int scoreLeftTextSize;
+	public float scoreRightXRate, scoreRightYRate;
+	public int scoreRightTextSize;
 	
 	/**
 	 * Get instance of this class. <br>
@@ -106,6 +116,14 @@ public class GameTypeDefinition {
 			nextMarginX = (float)nextJson.getDouble("marginX");
 			nextMarginY = (float)nextJson.getDouble("marginY");
 			nextSize = nextJson.getInt("size");
+			// Score text parameters
+			final JSONObject scoreJson = property.getJSONObject(SCORE);
+			final JSONObject scoreLeftJson = scoreJson.getJSONObject("left");
+			scoreLeftXRate = (float)scoreLeftJson.getDouble("xRate");
+			scoreLeftYRate = (float)scoreLeftJson.getDouble("xRate");
+			final JSONObject scoreRightJson = scoreJson.getJSONObject("right");
+			scoreLeftXRate = (float)scoreRightJson.getDouble("xRate");
+			scoreLeftYRate = (float)scoreRightJson.getDouble("xRate");
 		} catch (IOException | JSONException e) {
 			System.out.println(e);
 			throw new LoadPropertyException();
