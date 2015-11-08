@@ -1,4 +1,4 @@
-package com.kkbnart.wordis.game.board;
+package com.kkbnart.wordis.game.object.board;
 
 import java.util.Set;
 

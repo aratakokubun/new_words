@@ -1,4 +1,4 @@
-package com.kkbnart.wordis.game;
+package com.kkbnart.wordis.game.manager;
 
 import com.kkbnart.wordis.game.player.PlayerStatus;
 
@@ -31,5 +31,5 @@ public interface IGameTerminate {
 	 * @param myStatus	Status of this player
 	 * @param oppStatus	Status of opponent player
 	 */
-	public abstract void terminateVersus(final PlayerStatus myStatus, final PlayerStatus oppStatus);
+	public abstract void terminateVsPlayer(final PlayerStatus myStatus, final PlayerStatus oppStatus);
 }

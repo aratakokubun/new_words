@@ -3,8 +3,8 @@ package com.kkbnart.wordis.game.animation;
 import android.graphics.Canvas;
 
 import com.kkbnart.wordis.game.GameState;
-import com.kkbnart.wordis.game.board.Board;
 import com.kkbnart.wordis.game.object.block.NextBlocks;
+import com.kkbnart.wordis.game.object.board.Board;
 
 /**
  * Base class for game animation. <br>

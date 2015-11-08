@@ -8,9 +8,9 @@ import android.util.Log;
 import com.kkbnart.wordis.Constants;
 import com.kkbnart.wordis.exception.FontNotExistException;
 import com.kkbnart.wordis.game.GameState;
-import com.kkbnart.wordis.game.board.Board;
 import com.kkbnart.wordis.game.object.block.Block;
 import com.kkbnart.wordis.game.object.block.NextBlocks;
+import com.kkbnart.wordis.game.object.board.Board;
 import com.kkbnart.wordis.util.WordisFontTypes;
 import com.kkbnart.wordis.util.WordisFonts;
 

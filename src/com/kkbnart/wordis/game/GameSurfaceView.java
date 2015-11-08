@@ -1,5 +1,7 @@
 package com.kkbnart.wordis.game;
 
+import java.util.Collection;
+
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -10,10 +12,11 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-import com.kkbnart.wordis.game.animation.AnimationManager;
-import com.kkbnart.wordis.game.board.Board;
+import com.kkbnart.wordis.game.manager.CurrentGameStats;
+import com.kkbnart.wordis.game.manager.GameBoardManager;
 import com.kkbnart.wordis.game.object.block.NextBlocks;
 import com.kkbnart.wordis.game.object.block.OperatedBlocks;
+import com.kkbnart.wordis.game.object.board.Board;
 
 public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callback {
 	private static final String TAG = GameSurfaceView.class.getSimpleName();
@@ -47,11 +50,6 @@ public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 			// Lock Canvas
 			c = holder.lockCanvas();
 			if (c != null) {
-				// FIXME
-				// Draw from multiple thread
-				// Clear canvas
-				c.drawColor(0, PorterDuff.Mode.CLEAR);
-				
 				final Paint p = new Paint();
 				board.draw(c, p);
 				ob.draw(c, p, board);
@@ -67,15 +65,11 @@ public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 	}
 	
 	/**
-	 * Draw animation. <br>
+	 * Draw multiple board and blocks. <br>
 	 * 
-	 * @param animationManager	Animation manager and executor
-	 * @param board				Current board
-	 * @param nextBlocks		Next block set
-	 * @return Game action to be taken after animation
+	 * @param managers Managers which contains Objects
 	 */
-	public GameState drawAnimation(final AnimationManager animationManager,
-			final Board board, final NextBlocks nextBlocks) {
+	public void draw(final Collection<GameBoardManager> managers) {
 		final SurfaceHolder holder = getHolder();
 		Canvas c = null;
 		try {
@@ -84,7 +78,11 @@ public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 			if (c != null) {
 				// Clear canvas
 				c.drawColor(0, PorterDuff.Mode.CLEAR);
-				return animationManager.executeAnimation(c, board, nextBlocks);
+				
+				final Paint p = new Paint();
+				for (GameBoardManager manager : managers) {
+					manager.draw(c, p);
+				}
 			}
 		} finally {
 			try {
@@ -93,7 +91,6 @@ public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 				Log.e(TAG, "Can not unlock canvas");
 			}
 		}
-		return GameState.ANIMATION;
 	}
 
 	@Override

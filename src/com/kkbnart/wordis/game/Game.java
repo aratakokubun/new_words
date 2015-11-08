@@ -32,12 +32,14 @@ import com.kkbnart.wordis.game.dialog.DialogDismissableOnClickListener;
 import com.kkbnart.wordis.game.dialog.GameMenuDialog;
 import com.kkbnart.wordis.game.dialog.SingleGameFinishDialog;
 import com.kkbnart.wordis.game.layout.ViewLayout;
+import com.kkbnart.wordis.game.manager.CurrentGameStats;
+import com.kkbnart.wordis.game.manager.GameManager;
+import com.kkbnart.wordis.game.manager.IGameTerminate;
 import com.kkbnart.wordis.game.object.block.BlockSetFactory;
 import com.kkbnart.wordis.game.player.PlayerStatus;
 import com.kkbnart.wordis.game.player.WordisPlayer;
 import com.kkbnart.wordis.game.rule.MoveAmount;
 import com.kkbnart.wordis.game.rule.ScoreCalculator;
-import com.kkbnart.wordis.game.thread.GameThread;
 import com.kkbnart.wordis.game.util.Direction;
 import com.kkbnart.wordis.menu.Menu;
 
@@ -55,39 +57,46 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 	GameSurfaceView gsv;
 	
 	// Game manager to proceed everything except control with user interface
-	private Set<GameManager> managers = new HashSet<GameManager>();
+	private  GameManager manager = null;
 	// Game type of this game
 	private GameType type;
-	// Game thread
-	private GameThread gameThread = null;
+	// FIXME
+	// Use common class to preserve objective word 
+	// Objective word
+	private String word;
 	
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		// FIXME
 		// These variables are passed from menu with static class or Intent
-		// FIXME
-		// Prepare multiple game managers for multiple players
-		gameThread = new GameThread();
-		managers.add(new GameManager(this, gameThread, /*FIXME*/WordisPlayer.MY_PLAYER));
-		managers.add(new GameManager(this, gameThread, /*FIXME*/WordisPlayer.COM));
-		
-		// FIXME
-		// These variables are passed from menu with static class or Intent
-		// Load property files
 		try {
+			// TODO
+			// Create game type from players type
+			type = GameType.VS_CPU;
+			word = "TEST";
+			Set<WordisPlayer> wordisPlayers = new HashSet<WordisPlayer>(){
+				private static final long serialVersionUID = 969408424928353339L;
+				{
+				    add(WordisPlayer.MY_PLAYER);
+				    add(WordisPlayer.COM);
+				}
+			};
+			manager = new GameManager(this, type, word, wordisPlayers);
+			final BlockSetFactory factory = new BlockSetFactory(this, "short", word);
+			manager.setBlockSetFactory(factory);
+		
 			loadGameProperties("test", "downFall", "normal");
-		} catch (BlockCreateException | LoadPropertyException e) {
+		} catch (BlockCreateException | LoadPropertyException | InvalidParameterException e) {
 			forceFinishGame(e);
 			return;
 		}
-		this.type = GameType.TEST;
 		
 		// Get display size and update depending on the size
 		DisplayMetrics displaymetrics = new DisplayMetrics();
 		getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
-		int width = displaymetrics.widthPixels;
-		int height = displaymetrics.heightPixels;
+		final int width = displaymetrics.widthPixels;
+		final int height = displaymetrics.heightPixels;
 		surfaceSizeChanged(width, height);
 	}
 	
@@ -97,13 +106,7 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 	 * @param e Exception occurred in methods which call this
 	 */
 	private void forceFinishGame(Exception e) {
-		for (GameManager manager : managers) {
-			try {
-				manager.interruptGame();
-			} catch (NullPointerException ne) {
-				// Dismiss exception because force termination
-			}
-		}
+		manager.forceFinishGame();
 		finish();
 	}
 	
@@ -118,13 +121,6 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 		ViewLayout.getInstance().readJson(gameTypeName, this);
 		MoveAmount.getInstance().readJson(moveAmountName, this);
 		ScoreCalculator.getInstance().readJson(scorePatternName, this);
-		
-		for (GameManager manager : managers) {
-			// FIXME
-			// Use common block set factory
-			// manager.setBlockSetFactory(new BlockSetFactory(this, "normal", "TEST"));
-			manager.setBlockSetFactory(new BlockSetFactory(this, "short", "TEST"));
-		}
  	}
 	
 	/**
@@ -133,33 +129,31 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 	@Override
 	public void surfaceSizeChanged(final int width, final int height) {
 		try {
-			for (GameManager manager : managers) {
-				manager.surfaceSizeChanged(width, height);
-			}
+			manager.surfaceSizeChanged(width, height);
 		} catch (BlockCreateException | InvalidParameterException | NoAnimationException e) {
+			// TODO
+			// Use xml template
 			if (Constants.D) Log.e(TAG, "[width:" + width + ", height:" + height + "] are invalid.");
 			forceFinishGame(e);
 		}
 	}
 	
+	/**
+	 * Called on view item has got ready. <br>
+	 */
 	@AfterViews
 	protected void setupView(){
 		gsv.setGameActivity(this);
-		for (GameManager manager : managers) {
-			manager.setGameSurfaceView(gsv);
-		}
+		manager.setGameSurfaceView(gsv);
 		startGame();
 	}
 	
 	private void startGame() {
 		try {
-			for (GameManager manager : managers) {
-				manager.startGame(type);
-			}
+			manager.startGame(type);
 		} catch (BlockCreateException | NoAnimationException e) {
 			forceFinishGame(e);
 		}
-		gameThread.startThread();
 	}
 	
 	private void finishGame() {
@@ -176,8 +170,6 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 		if (keyCode != KeyEvent.KEYCODE_BACK) {
 			return super.onKeyDown(keyCode, event);
 		} else {
-			// TODO
-			// Change according to game status
 			showGameMenu();
 			return false;
 		}
@@ -192,11 +184,10 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 			Dialog dialog = new GameMenuDialog(this, retryClickListener,
 					exitClickListener, dialogCancelListener, true);
 			dialog.show();
-			for (GameManager manager : managers) {
-				manager.suspendGame();
-			}
+			manager.suspendGame();
 			break;
 		default:
+			// Can not pause while versus multiple players
 			break;
 		}
 	}
@@ -206,9 +197,7 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 	 */
 	@Override
 	public void onSurfaceTouched(MotionEvent event) {
-		for (GameManager manager : managers) {
-			manager.onSurfaceTouched(event);
-		}
+		manager.onSurfaceTouched(event);
 	}
 	
 	@Click(R.id.leftButton)
@@ -229,29 +218,17 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 	}
 	
 	private void moveBlock(final int dirId) {
-		// FIXME
-		// Specify manager to operate
 		PointF p = MoveAmount.getInstance().getMove(dirId);
-		for (GameManager manager : managers) {
-			manager.moveBlock(p.x, p.y);
-		}
+		manager.moveBlock(WordisPlayer.MY_PLAYER, p.x, p.y);
 	}
 	
 	@Click(R.id.counterClockwiseButton)
 	protected void counterClockwiseButtonClick(final View view) {
-		// FIXME
-		// Specify manager to operate
-		for (GameManager manager : managers) {
-			manager.rotateBlock(false);
-		}
+		manager.rotateBlock(WordisPlayer.MY_PLAYER, false);
 	}
 	@Click(R.id.clockwiseButton)
 	protected void clockwiseButtonClick(final View view) {
-		// FIXME
-		// Specify manager to operate
-		for (GameManager manager : managers) {
-			manager.rotateBlock(true);
-		}
+		manager.rotateBlock(WordisPlayer.MY_PLAYER, true);
 	}
 	
 	@Click(R.id.menuButton)
@@ -259,9 +236,7 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 		Dialog dialog = new GameMenuDialog(this, retryClickListener,
 				exitClickListener, dialogCancelListener, /*cancel button enabled = */ true);
 		dialog.show();
-		for (GameManager manager : managers) {
-			manager.suspendGame();
-		}
+		manager.suspendGame();
 	}
 	
 	// On Click Listener for game menu dialog
@@ -284,9 +259,7 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 	private OnCancelListener dialogCancelListener = new OnCancelListener() {
 		@Override
 		public void onCancel(DialogInterface dialog) {
-			for (GameManager manager : managers) {
-				manager.resumeGame();
-			}
+			manager.resumeGame();
 		}
 	};
 
@@ -303,7 +276,7 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 	}
 
 	@Override
-	public void terminateVersus(PlayerStatus myStatus, PlayerStatus oppStatus) {
+	public void terminateVsPlayer(PlayerStatus myStatus, PlayerStatus oppStatus) {
 		// TODO Auto-generated method stub
 	}
 }

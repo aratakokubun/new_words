@@ -6,7 +6,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 
-import com.kkbnart.wordis.game.board.Board;
+import com.kkbnart.wordis.game.object.board.Board;
 import com.kkbnart.wordis.game.object.character.Character;
 
 /**

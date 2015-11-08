@@ -1,4 +1,4 @@
-package com.kkbnart.wordis.game;
+package com.kkbnart.wordis.game.layout;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,6 +25,7 @@ import com.kkbnart.wordis.exception.LoadPropertyException;
  * 
  * @author kkbnart
  */
+@Deprecated
 public class GameTypeDefinition {
 	// FIXME
 	// adapt to multiple players

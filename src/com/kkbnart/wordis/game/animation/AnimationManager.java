@@ -5,8 +5,8 @@ import android.view.MotionEvent;
 
 import com.kkbnart.wordis.exception.NoAnimationException;
 import com.kkbnart.wordis.game.GameState;
-import com.kkbnart.wordis.game.board.Board;
 import com.kkbnart.wordis.game.object.block.NextBlocks;
+import com.kkbnart.wordis.game.object.board.Board;
 import com.kkbnart.wordis.game.player.WordisPlayer;
 
 /**

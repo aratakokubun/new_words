@@ -21,7 +21,8 @@ import com.kkbnart.wordis.game.object.character.CharacterSet;
 
 
 /**
- * Factory to create block set randomly
+ * Factory to create block set randomly <br>
+ * 
  * @author kkbnart
  */
 public class BlockSetFactory {

@@ -4,10 +4,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 import android.graphics.Canvas;
+import android.graphics.Paint;
 
 import com.kkbnart.wordis.game.GameState;
-import com.kkbnart.wordis.game.board.Board;
 import com.kkbnart.wordis.game.object.block.NextBlocks;
+import com.kkbnart.wordis.game.object.board.Board;
 
 /**
  * Execute assigned animations. <br>
@@ -63,6 +64,17 @@ public class AnimationExecutor {
 		} else {
 			return action;
 		}
+	}
+
+	/**
+	 * Draw overlaid animations like text. <br>
+	 * 
+	 * @param canvas	Surface view canvas
+	 * @param paint		Paint for canvas
+	 * @param board		Current board
+	 */
+	public void drawOverlayAnimation(final Canvas canvas, final Paint paint) {
+		
 	}
 	
 	public boolean hasAnimation() {

@@ -1,76 +1,67 @@
-package com.kkbnart.wordis.game;
+package com.kkbnart.wordis.game.manager;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import android.view.MotionEvent;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 
 import com.kkbnart.wordis.exception.BlockCreateException;
 import com.kkbnart.wordis.exception.InvalidParameterException;
 import com.kkbnart.wordis.exception.NoAnimationException;
+import com.kkbnart.wordis.game.GameState;
 import com.kkbnart.wordis.game.animation.AnimationManager;
 import com.kkbnart.wordis.game.animation.BlockDeleteAnimation;
 import com.kkbnart.wordis.game.animation.FreeFallAnimation;
 import com.kkbnart.wordis.game.animation.GameAnimationFactory;
 import com.kkbnart.wordis.game.animation.GameAnimationType;
-import com.kkbnart.wordis.game.board.Board;
 import com.kkbnart.wordis.game.layout.LayoutDefinition;
 import com.kkbnart.wordis.game.layout.ViewLayout;
 import com.kkbnart.wordis.game.object.block.Block;
-import com.kkbnart.wordis.game.object.block.BlockIdFactory;
-import com.kkbnart.wordis.game.object.block.BlockSetFactory;
+import com.kkbnart.wordis.game.object.block.BlockSetBuffer;
 import com.kkbnart.wordis.game.object.block.NextBlocks;
 import com.kkbnart.wordis.game.object.block.OperatedBlocks;
+import com.kkbnart.wordis.game.object.board.Board;
 import com.kkbnart.wordis.game.player.WordisPlayer;
 import com.kkbnart.wordis.game.rule.Collision;
 import com.kkbnart.wordis.game.rule.DeleteBlockLine;
-import com.kkbnart.wordis.game.thread.GameThread;
-import com.kkbnart.wordis.game.thread.GameThreadManager;
 
-public class GameManager implements GameThreadManager {
+/**
+ * Manage game block action (move, delete, etc..) <br>
+ * 
+ * @author kkbnart
+ */
+public class GameBoardManager {
 	// Game board
 	private Board board = null;
 	// Operated block
 	private OperatedBlocks operated = null;
 	// Next block
 	private NextBlocks next = null;
-	// GameSurfaceView
-	private GameSurfaceView gsv = null;
 	// Factory to create new set of block
-	private BlockSetFactory blockSetFactory = null;
+	private BlockSetBuffer blockSetBuffer = null;
 	// Manage and execute animations
 	private AnimationManager animationManager = null;
-
-	// Interface called on terminating game
-	private IGameTerminate gameTerminate;
-	
-	// Game thread
-	private GameThread gameThread = null;
-	
-	// Game type
-	private GameType gameType;
-	// Game status
-	private GameState gameState;
 	// Wordis player type
 	private WordisPlayer player;
+
+	private String word;
 	
+	// Game status
+	private GameState gameState;
+	// Temporary game status while pause
+	private GameState temporaryStateWhilePause;
 	// Preserve game statics while current game
-	private CurrentGameStats stats;
+	private CurrentGameStats stats = new CurrentGameStats();
 	
-	public GameManager(final IGameTerminate gameTerminate, final GameThread gameThread, final WordisPlayer player) {
-		this.gameTerminate = gameTerminate;
-		this.gameThread = gameThread;
-		this.gameThread.addGameThreadManager(this);
+	public GameBoardManager(final WordisPlayer player, final String word) {
 		this.player = player;
-		this.stats = new CurrentGameStats();
+		this.word = word;
 	}
 	
-	public void setGameSurfaceView(final GameSurfaceView gsv) {
-		this.gsv = gsv;
-	}
-	
-	public void setBlockSetFactory(final BlockSetFactory factory) {
-		this.blockSetFactory = factory;
+	public void setBlockSetBuffer(final BlockSetBuffer buffer) {
+		buffer.registerClient(player);
+		this.blockSetBuffer = buffer;
 	}
 	
 	/**
@@ -79,14 +70,11 @@ public class GameManager implements GameThreadManager {
 	 * @throws BlockCreateException Can not create blocks
 	 * @throws NoAnimationException Can not add animation 
 	 */
-	public void startGame(final GameType type) throws BlockCreateException, NoAnimationException {
-		gameType = type;
-		
+	public void startGame() throws BlockCreateException, NoAnimationException {
 		// Set next blocks prepared to start
-		next.setFactory(blockSetFactory);
-		final GameTypeDefinition gtd = GameTypeDefinition.getInstance();
-		next.initializeBlockSet(gtd.nextSize);
-		operated.setBlocks(next.releaseNextBlocks());
+		next.setBlockSetBuffer(blockSetBuffer);
+		next.initializeBlockSet(player, ViewLayout.getInstance().nextSize);
+		operated.setBlocks(next.releaseNextBlocks(player));
 		board.clearBlocks();
 		stats.clearStats();
 
@@ -113,6 +101,7 @@ public class GameManager implements GameThreadManager {
 		final int y = (int)(ld.boardYRate * height);
 		final int w = (int)(vl.boardWRate * width);
 		final int h = (int)(vl.boardHRate * height);
+		
 		if (board == null) {
 			board = new Board(x, y, w, h, vl.boardCol, vl.boardRow, vl.boardCollisionX, vl.boardCollisionY,
 					vl.boardCollisionCol, vl.boardCollisionRow, vl.boardStackCellX, vl.boardStackCellY);
@@ -144,19 +133,8 @@ public class GameManager implements GameThreadManager {
 		}
 	}
 	
-	/**
-	 * @see GameThreadManager#continueGame()
-	 */
-	@Override
-	public boolean continueGame() {
-		return gameState != GameState.GAMEFINISH;
-	}
-	
-	/**
-	 * @see GameThreadManager#invokeMainProcess()
-	 */
-	@Override
-	public synchronized void invokeMainProcess(final long elapsedMSec) {
+	/* ---------------------------------- */
+	public void updateBoardObjects(final long elapsedMSec) {
 		// If game is not ready, skip process
 		if (checkIsNull()) {
 			return;
@@ -169,7 +147,7 @@ public class GameManager implements GameThreadManager {
 				updateOperatedBlocks(elapsedMSec);
 				break;
 			case FALL:
-				updateFallBlocks();
+				updateFallingBlocks();
 				break;
 			case DELETE:
 				updateDeleteBlocks();
@@ -177,19 +155,19 @@ public class GameManager implements GameThreadManager {
 			case ANIMATION:
 				updateAnimation();
 				return;
-			case RELEASE_NEXT:
-				operated.setBlocks(next.releaseNextBlocks());
-				gameState = GameState.CONTROL;
-				break;
 			default:
 				// Do nothing
 				return;
 			}
-			updateView();
 		} catch (BlockCreateException | NoAnimationException e) {
 			// TODO
 			// Handle exception with showing some message and terminate game.
 		}
+	}
+	
+	public boolean checkIsNull() {
+		// TODO
+		return false;
 	}
 	
 	/**
@@ -209,12 +187,12 @@ public class GameManager implements GameThreadManager {
 	}
 	
 	/**
-	 * Update block fall. <br>
+	 * Update block falling. <br>
 	 * 
 	 * @throws BlockCreateException
 	 * @throws NoAnimationException
 	 */
-	private void updateFallBlocks() throws BlockCreateException, NoAnimationException {
+	private void updateFallingBlocks() throws BlockCreateException, NoAnimationException {
 		// Set fall animation
 		GameAnimationFactory factory = animationManager.getAnimationFactory();
 		FreeFallAnimation animation = (FreeFallAnimation)factory.create(GameAnimationType.BLOCK_FALL);
@@ -244,7 +222,7 @@ public class GameManager implements GameThreadManager {
 				animationManager.addAnimation(GameAnimationType.GAME_OVER);
 				gameState = GameState.ANIMATION;
 			} else {
-				operated.setBlocks(next.releaseNextBlocks());
+				operated.setBlocks(next.releaseNextBlocks(player));
 				stats.endChain();
 				gameState = GameState.CONTROL;
 			}
@@ -267,7 +245,6 @@ public class GameManager implements GameThreadManager {
 	private Set<Block> deleteBlocks() {
 		final Block[][] matrix = board.getMatrixedBlocks();
 		
-		final String word = blockSetFactory.getWord();
 		final int order = 0;
 		final Set<Block> deletedBlocks = DeleteBlockLine.deleteWordLine(matrix, word, order);
 		
@@ -279,8 +256,8 @@ public class GameManager implements GameThreadManager {
 
 		// Delete specified blocks from board
 		board.deleteBlocks(deletedBlockIds);
-		// Release ids of deleted blocks from id factory
-		BlockIdFactory.getInstance().dissociateIds(deletedBlockIds);
+		// Release ids of deleted blocks from id buffer
+		blockSetBuffer.releaseIds(player, deletedBlockIds);
 		
 		return deletedBlocks;
 	}
@@ -294,110 +271,56 @@ public class GameManager implements GameThreadManager {
 		return board.getIsBoardStacked();
 	}
 	
-	/**
-	 * Update view animation and take game actions after the animation. <br>
-	 */
 	private void updateAnimation() {
-		// FIXME
-		// Divide process to update phase and draw phase,
-		// and divide drawing board and drawing superimposed text
-		if (animationManager.hasAnimation()) {
-			gameState = gsv.drawAnimation(animationManager, board, next);
-		}
+		// TODO
 	}
-	
+
 	/**
-	 * Update view graphics. <br>
-	 */
-	private void updateView() {
-		gsv.draw(board, operated, next, stats);
-	}
-	
-	/**
-	 * Check if class members are initialized. <br>
+	 * Draw objects and animations. <br>
 	 * 
-	 * @return true : Some members are null. <br>
-	 * 		   false: All members are not null. <br>
+	 * @param canvas
+	 * @param paint
 	 */
-	private boolean checkIsNull() {
-		return board == null || operated == null || next == null || gsv == null
-				|| blockSetFactory == null || animationManager == null;
-	}
-	
-	/**
-	 * @see GameThreadManager#finishGame()
-	 */
-	@Override
-	public void finishGame() {
-		switch (gameType) {
-		case TEST:
-		case PRACTICE:
-		case SINGLE:
-			// FIXME
-			gameTerminate.terminateSingle(stats);
-			break;
-		case VS_CPU:
-			// TODO
-			break;
-		case MULTI_NET:
-			// TODO
-			break;
+	public void draw(final Canvas canvas, final Paint paint) {
+		if (animationManager.hasAnimation()) {
+			gameState = animationManager.executeAnimation(canvas, board, next);
+		} else {
+			board.draw(canvas, paint);
+			operated.draw(canvas, paint, board);
+			next.draw(canvas, paint, board);
 		}
 	}
 	
-	/**
-	 * To forcefully finish game from outside, interrupt thread. <br>
-	 */
-	public void interruptGame() {
-		gameThread.initThread();
+	/* ---------------------------------- */
+	public boolean continueGame() {
+		return gameState != GameState.FINISH;
 	}
 	
+	// TODO
+	// Check deep copy
 	public void suspendGame() {
+		temporaryStateWhilePause = gameState;
 		gameState = GameState.PAUSE;
 	}
 	
 	public void resumeGame() {
-		gameState = GameState.NONE;
+		gameState = temporaryStateWhilePause;
 	}
 	
-	public GameType getGameType() {
-		return gameType;
+	public CurrentGameStats getGameStats() {
+		return stats;
 	}
-
-	/**
-	 * Move blocks. <br>
-	 * Block operations are valid while not animation. <br>
-	 * Synchronized because update is conflicted with user operation.
-	 * 
-	 * @param dx	x direction move
-	 * @param dy	y direction move
-	 */
+	
+	/* ---------------------------------- */
 	public synchronized void moveBlock(final float dx, final float dy) {
 		if (!animationManager.hasAnimation()) {
 			operated.operate(board, dx, dy);
 		}
 	}
 	
-	/**
-	 * Rotate blocks. <br>
-	 * Block operations are valid while not animation. <br>
-	 * Synchronized because update is conflicted with user operation.
-	 * 
-	 * @param clockWise	Is clockwise rotation or not
-	 */
 	public synchronized void rotateBlock(final boolean clockWise) {
 		if (!animationManager.hasAnimation()) {
 			operated.operate(board, clockWise);
 		}
-	}
-	
-	/**
-	 * On surface touched. <br>
-	 * Synchronized because update is conflicted with user operation.
-	 * 
-	 * @param event Touch event
-	 */
-	public synchronized void onSurfaceTouched(MotionEvent event) {
-		animationManager.onSurfaceTouched(event);
 	}
 }

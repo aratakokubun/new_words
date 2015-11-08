@@ -6,15 +6,15 @@ import android.os.Handler;
 import android.os.Message;
 
 public class GameThread implements Runnable {
-	private HashSet<GameThreadManager> managers = new HashSet<GameThreadManager>();
+	private HashSet<ThreadListenerCallback> listeners = new HashSet<ThreadListenerCallback>();
 	
 	private Thread thread = null;
 	
 	// Sleep time [ms]
 	private static final long SLEEP = 25;
 	
-	public void addGameThreadManager(final GameThreadManager manager) {
-		managers.add(manager);
+	public void addCallbackListener(final ThreadListenerCallback manager) {
+		listeners.add(manager);
 	}
 	
 	public void startThread() {
@@ -58,7 +58,7 @@ public class GameThread implements Runnable {
 	}
 	
 	private boolean continueGame() {
-		for (GameThreadManager manager : managers) {
+		for (ThreadListenerCallback manager : listeners) {
 			if (!manager.continueGame()) {
 				return false;
 			}
@@ -67,7 +67,7 @@ public class GameThread implements Runnable {
 	}
 	
 	private void invokeMainProcess(final long elapsedTime) {
-		for (GameThreadManager manager : managers) {
+		for (ThreadListenerCallback manager : listeners) {
 			manager.invokeMainProcess(elapsedTime);			
 		}
 	}
@@ -92,7 +92,7 @@ public class GameThread implements Runnable {
 	});
 	
 	private void finishGame() {
-		for (GameThreadManager manager : managers) {
+		for (ThreadListenerCallback manager : listeners) {
 			manager.finishGame();
 		}
 	}

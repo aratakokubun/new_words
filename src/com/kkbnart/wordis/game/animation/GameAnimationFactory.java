@@ -30,7 +30,7 @@ public class GameAnimationFactory {
 	public void updateAnimationSize(final WordisPlayer player, final int col, final int row, final int width, final int height) throws NoAnimationException {
 		// Register animations to factory
 		setAnimation(GameAnimationType.GAME_OVER, new GameOverAnimation(
-				/* animation time= */5000, GameState.GAMEFINISH, col));
+				/* animation time= */5000, GameState.FINISH, col));
 		setAnimation(GameAnimationType.GAME_START, new GameStartAnimation(
 				/* animation time= */3000, GameState.CONTROL));
 		setAnimation(GameAnimationType.BLOCK_FALL, new FreeFallAnimation(

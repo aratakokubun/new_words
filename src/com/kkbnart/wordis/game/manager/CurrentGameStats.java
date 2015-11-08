@@ -1,4 +1,4 @@
-package com.kkbnart.wordis.game;
+package com.kkbnart.wordis.game.manager;
 
 import com.kkbnart.wordis.game.rule.ScoreCalculator;
 
