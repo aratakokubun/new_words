@@ -7,7 +7,8 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 
 import com.kkbnart.wordis.exception.BlockCreateException;
-import com.kkbnart.wordis.game.board.Board;
+import com.kkbnart.wordis.game.object.board.Board;
+import com.kkbnart.wordis.game.player.WordisPlayer;
 
 
 /**
@@ -17,12 +18,16 @@ import com.kkbnart.wordis.game.board.Board;
  */
 public class NextBlocks extends ArrayDeque<BlockSet> {
 	private static final long serialVersionUID = 1L;
+	
+	// Specify maximum number of next block sets
+	private static final int MAX_NUM = 2;
+	
 	// Root position of the next candidates
 	private float rootX, rootY;
 	// Margin between next blocks
 	private float marginX, marginY;
 	// Factory to create new block sets
-	private BlockSetFactory factory = null;
+	private BlockSetBuffer buffer = null;
 	
 	/**
 	 * Constructor with specifying factory
@@ -40,8 +45,8 @@ public class NextBlocks extends ArrayDeque<BlockSet> {
 		this.marginY = marginY;
 	}
 	
-	public void setFactory(final BlockSetFactory factory) {
-		this.factory = factory;
+	public void setBlockSetBuffer(final BlockSetBuffer buffer) {
+		this.buffer = buffer;
 	}
 	
 	public void setCoordinate(final float rootX, final float rootY, final float marginX, final float marginY) {
@@ -57,13 +62,14 @@ public class NextBlocks extends ArrayDeque<BlockSet> {
 	 * @param num Stuck size
 	 * @throws BlockCreateException Can not create block
 	 */
-	public void initializeBlockSet(final int num) throws BlockCreateException {
-		if (factory == null) {
+	public void initializeBlockSet(final WordisPlayer player, int num) throws BlockCreateException {
+		num = Math.max(num, MAX_NUM);
+		if (buffer == null) {
 			throw new BlockCreateException();
 		} else {
 			this.clear();
 			for (int i = 0; i < num; i++) {
-				addLast(factory.create());
+				addLast(buffer.requestBlockSet(player));
 			}
 		}
 	}
@@ -74,11 +80,11 @@ public class NextBlocks extends ArrayDeque<BlockSet> {
 	 * @return First stuck element of next block set
 	 * @throws BlockCreateException Can not create block
 	 */
-	public BlockSet releaseNextBlocks() throws BlockCreateException {
-		if (factory == null) {
+	public BlockSet releaseNextBlocks(final WordisPlayer player) throws BlockCreateException {
+		if (buffer == null) {
 			throw new BlockCreateException();
 		} else {
-			addLast(factory.create());
+			addLast(buffer.requestBlockSet(player));
 			updatePosition();
 			return pop();
 		}

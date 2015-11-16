@@ -1,5 +1,8 @@
 package com.kkbnart.wordis.game;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
@@ -28,8 +31,12 @@ import com.kkbnart.wordis.exception.NoAnimationException;
 import com.kkbnart.wordis.game.dialog.DialogDismissableOnClickListener;
 import com.kkbnart.wordis.game.dialog.GameMenuDialog;
 import com.kkbnart.wordis.game.dialog.SingleGameFinishDialog;
+import com.kkbnart.wordis.game.dialog.VsCpuFinishDialog;
+import com.kkbnart.wordis.game.layout.ViewLayout;
+import com.kkbnart.wordis.game.manager.CurrentGameStats;
+import com.kkbnart.wordis.game.manager.GameManager;
+import com.kkbnart.wordis.game.manager.IGameTerminate;
 import com.kkbnart.wordis.game.object.block.BlockSetFactory;
-import com.kkbnart.wordis.game.player.PlayerStatus;
 import com.kkbnart.wordis.game.player.WordisPlayer;
 import com.kkbnart.wordis.game.rule.MoveAmount;
 import com.kkbnart.wordis.game.rule.ScoreCalculator;
@@ -50,38 +57,46 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 	GameSurfaceView gsv;
 	
 	// Game manager to proceed everything except control with user interface
-	private GameManager manager;
+	private  GameManager manager = null;
 	// Game type of this game
 	private GameType type;
+	// FIXME
+	// Use common class to preserve objective word 
+	// Objective word
+	private String word;
 	
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		// FIXME
 		// These variables are passed from menu with static class or Intent
-		// FIXME
-		// Prepare multiple game managers for multiple players
-		// And use common game thread 
-		manager = new GameManager(this, WordisPlayer.MY_PLAYER);
-		
-		// FIXME
-		// These variables are passed from menu with static class or Intent
-		// Load property files
 		try {
+			// TODO
+			// Create game type from players type
+			type = GameType.VS_CPU;
+			word = "TEST";
+			Set<WordisPlayer> wordisPlayers = new HashSet<WordisPlayer>(){
+				private static final long serialVersionUID = 969408424928353339L;
+				{
+				    add(WordisPlayer.MY_PLAYER);
+				    add(WordisPlayer.COM);
+				}
+			};
+			manager = new GameManager(this, type, word, wordisPlayers);
+			final BlockSetFactory factory = new BlockSetFactory(this, "short", word);
+			manager.setBlockSetFactory(factory);
+		
 			loadGameProperties("test", "downFall", "normal");
-			// manager.setBlockSetFactory(new BlockSetFactory(this, "normal", "TEST"));
-			manager.setBlockSetFactory(new BlockSetFactory(this, "short", "TEST"));
-		} catch (BlockCreateException | LoadPropertyException e) {
+		} catch (BlockCreateException | LoadPropertyException | InvalidParameterException e) {
 			forceFinishGame(e);
 			return;
 		}
-		this.type = GameType.TEST;
 		
 		// Get display size and update depending on the size
 		DisplayMetrics displaymetrics = new DisplayMetrics();
 		getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
-		int width = displaymetrics.widthPixels;
-		int height = displaymetrics.heightPixels;
+		final int width = displaymetrics.widthPixels;
+		final int height = displaymetrics.heightPixels;
 		surfaceSizeChanged(width, height);
 	}
 	
@@ -91,20 +106,19 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 	 * @param e Exception occurred in methods which call this
 	 */
 	private void forceFinishGame(Exception e) {
-		manager.interruptGame();
-		// TODO
-		// finish activity
-		System.exit(RESULT_OK);
+		manager.forceFinishGame();
+		finish();
 	}
 	
 	/**
 	 * Load game properties from files. <br>
 	 * 
-	 * @throws LoadPropertyException Can not load property files
+	 * @throws LoadPropertyException	Can not load property files
+	 * @throws BlockCreateException		Can not create new block set
 	 */
 	private void loadGameProperties(final String gameTypeName,
-			final String moveAmountName, final String scorePatternName) throws LoadPropertyException {
-		GameTypeDefinition.getInstance().readJson(gameTypeName, this);
+			final String moveAmountName, final String scorePatternName) throws LoadPropertyException, BlockCreateException {
+		ViewLayout.getInstance().readJson(gameTypeName, this);
 		MoveAmount.getInstance().readJson(moveAmountName, this);
 		ScoreCalculator.getInstance().readJson(scorePatternName, this);
  	}
@@ -117,11 +131,16 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 		try {
 			manager.surfaceSizeChanged(width, height);
 		} catch (BlockCreateException | InvalidParameterException | NoAnimationException e) {
+			// TODO
+			// Use xml template
 			if (Constants.D) Log.e(TAG, "[width:" + width + ", height:" + height + "] are invalid.");
 			forceFinishGame(e);
 		}
 	}
 	
+	/**
+	 * Called on view item has got ready. <br>
+	 */
 	@AfterViews
 	protected void setupView(){
 		gsv.setGameActivity(this);
@@ -151,8 +170,6 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 		if (keyCode != KeyEvent.KEYCODE_BACK) {
 			return super.onKeyDown(keyCode, event);
 		} else {
-			// TODO
-			// Change according to game status
 			showGameMenu();
 			return false;
 		}
@@ -170,6 +187,7 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 			manager.suspendGame();
 			break;
 		default:
+			// Can not pause while versus multiple players
 			break;
 		}
 	}
@@ -201,16 +219,16 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 	
 	private void moveBlock(final int dirId) {
 		PointF p = MoveAmount.getInstance().getMove(dirId);
-		manager.moveBlock(p.x, p.y);
+		manager.moveBlock(WordisPlayer.MY_PLAYER, p.x, p.y);
 	}
 	
 	@Click(R.id.counterClockwiseButton)
 	protected void counterClockwiseButtonClick(final View view) {
-		manager.rotateBlock(false);
+		manager.rotateBlock(WordisPlayer.MY_PLAYER, false);
 	}
 	@Click(R.id.clockwiseButton)
 	protected void clockwiseButtonClick(final View view) {
-		manager.rotateBlock(true);
+		manager.rotateBlock(WordisPlayer.MY_PLAYER, true);
 	}
 	
 	@Click(R.id.menuButton)
@@ -238,6 +256,14 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 		}
 	};
 	
+	private DialogDismissableOnClickListener nextClieckListener = new DialogDismissableOnClickListener() {
+		@Override
+		public void onClick(View v) {
+			// TODO
+			// Go to next game or next level
+		}
+	};
+	
 	private OnCancelListener dialogCancelListener = new OnCancelListener() {
 		@Override
 		public void onCancel(DialogInterface dialog) {
@@ -246,19 +272,23 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 	};
 
 	@Override
-	public void terminateSingle(CurrentGameStats currentGameStats) {
+	public void terminateSingle(final CurrentGameStats currentGameStats) {
 		Dialog dialog = new SingleGameFinishDialog(this, retryClickListener,
 				exitClickListener, currentGameStats.getScore(), currentGameStats.getMaxChain());
 		dialog.show();
 	}
 
 	@Override
-	public void terminateVsCpu(PlayerStatus myStatus, PlayerStatus cpuStatus) {
-		// TODO Auto-generated method stub
+	public void terminateVsCpu(final CurrentGameStats myStats, final CurrentGameStats cpuStats,
+			final int exp, final int point) {
+		Dialog dialog = new VsCpuFinishDialog(this, retryClickListener,
+				exitClickListener, nextClieckListener, myStats.getScore(), cpuStats.getMaxChain(),
+				exp, point, myStats.getIsLoser());
+		dialog.show();
 	}
 
 	@Override
-	public void terminateVersus(PlayerStatus myStatus, PlayerStatus oppStatus) {
+	public void terminateVsPlayer(CurrentGameStats myStatus, CurrentGameStats oppStatus) {
 		// TODO Auto-generated method stub
 	}
 }

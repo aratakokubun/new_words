@@ -21,7 +21,8 @@ import com.kkbnart.wordis.game.object.character.CharacterSet;
 
 
 /**
- * Factory to create block set randomly
+ * Factory to create block set randomly <br>
+ * 
  * @author kkbnart
  */
 public class BlockSetFactory {
@@ -179,25 +180,11 @@ public class BlockSetFactory {
 			final String jsonStr = FileIOUtils.loadTextAsset(Constants.BLOCK_PATTERN_JSON, context);
 			final JSONObject property = (new JSONObject(jsonStr)).getJSONObject(propertyName);
 			
-			// Add move amount of each direction
 			final JSONArray patterns = property.getJSONArray("patterns");
 			for (int i = 0; i < patterns.length(); i++) {
 				final JSONObject pattern = patterns.getJSONObject(i);
-				final int centerIndex = pattern.getInt("center");
-				final float weight = (float)pattern.getDouble("weight");
-				final JSONArray blocks = pattern.getJSONArray("blocks");
-				ArrayList<Point> blockPos = new ArrayList<Point>();
-				for (int j = 0; j < blocks.length(); j++) {
-					final JSONObject pos = blocks.getJSONObject(j);
-					final int x = pos.getInt("x");
-					final int y = pos.getInt("y");
-					blockPos.add(new Point(x, y));
-				}
-				// Validate
-				if (centerIndex >= blockPos.size()) {
-					throw new LoadPropertyException();
-				}
-				registerBlockPatterns(new PatternDefinition(blockPos, centerIndex), weight);
+				final float weight = (float)pattern.getDouble("weight");				
+				registerBlockPatterns(PatternDefinition.readFromJsonObject(pattern), weight);
 			}
 		} catch (IOException | JSONException e) {
 			throw new LoadPropertyException();

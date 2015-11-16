@@ -8,8 +8,8 @@ import android.util.Log;
 import com.kkbnart.wordis.Constants;
 import com.kkbnart.wordis.exception.FontNotExistException;
 import com.kkbnart.wordis.game.GameState;
-import com.kkbnart.wordis.game.board.Board;
 import com.kkbnart.wordis.game.object.block.NextBlocks;
+import com.kkbnart.wordis.game.object.board.Board;
 import com.kkbnart.wordis.util.WordisFontTypes;
 import com.kkbnart.wordis.util.WordisFonts;
 
@@ -39,8 +39,6 @@ public class GameStartAnimation extends GameAnimation {
 		final float textY = textPosition.y * board.getHeight() + board.getY();
 		final float textSize = textPosition.size;
 		paint.setTextSize(textSize);
-
-		// Count text
 
 		// Custom alpha
 		final int alpha = (int)((((getAnimationTime() - elapsedTime) % 1000) / 1250.f + 0.2f) * 255);

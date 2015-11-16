@@ -3,8 +3,8 @@ package com.kkbnart.wordis.game.object.block;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 
-import com.kkbnart.wordis.game.board.Board;
-import com.kkbnart.wordis.game.board.NearestMargin;
+import com.kkbnart.wordis.game.object.board.Board;
+import com.kkbnart.wordis.game.object.board.NearestMargin;
 import com.kkbnart.wordis.game.rule.Collision;
 import com.kkbnart.wordis.game.rule.Fall;
 

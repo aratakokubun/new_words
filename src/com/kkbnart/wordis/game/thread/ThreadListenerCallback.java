@@ -4,7 +4,7 @@ package com.kkbnart.wordis.game.thread;
  * Interface between Game Thread and it's manager. <br>
  * @author kkbnart
  */
-public interface GameThreadManager {
+public interface ThreadListenerCallback {
 	/**
 	 * Judge if continue game. <br>
 	 * 

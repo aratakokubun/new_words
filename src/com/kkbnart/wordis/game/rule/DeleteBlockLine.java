@@ -25,6 +25,9 @@ public class DeleteBlockLine {
 		// TODO
 		// count how many times each id is selected with different direction. (count 1 for multiple times in same direction)
 		
+		// XXX
+		// Including bugs : blocks are deleted without specified "word"
+		
 		deletedBlocks.addAll(deleteVerticalWordLine(matrix, word, order));
 		deletedBlocks.addAll(deleteHorizontalWordLine(matrix, word, order));
 		deletedBlocks.addAll(deleteLeftDiagonalWordLine(matrix, word, order));

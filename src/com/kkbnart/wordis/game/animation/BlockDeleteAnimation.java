@@ -7,9 +7,9 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 
 import com.kkbnart.wordis.game.GameState;
-import com.kkbnart.wordis.game.board.Board;
 import com.kkbnart.wordis.game.object.block.Block;
 import com.kkbnart.wordis.game.object.block.NextBlocks;
+import com.kkbnart.wordis.game.object.board.Board;
 
 public class BlockDeleteAnimation extends GameAnimation {
 
