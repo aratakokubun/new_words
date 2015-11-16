@@ -4,6 +4,7 @@ public enum WordisPlayer {
 	MY_PLAYER (0),
 	OPP_PLAYER (1),
 	COM (1),
+	NONE(0),
 	;
 	
 	private int side;

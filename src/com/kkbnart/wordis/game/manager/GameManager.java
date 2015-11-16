@@ -2,6 +2,7 @@ package com.kkbnart.wordis.game.manager;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import android.view.MotionEvent;
@@ -39,6 +40,8 @@ public class GameManager implements ThreadListenerCallback {
 	// Objective word
 	private String word;
 	
+	private WordisPlayer loser = WordisPlayer.NONE;
+	
 	public GameManager(final IGameTerminate gameTerminate, final GameType gameType, final String word, 
 			final Set<WordisPlayer> wordisPlayers) throws InvalidParameterException {
 		this.gameTerminate = gameTerminate;
@@ -72,6 +75,7 @@ public class GameManager implements ThreadListenerCallback {
 	 */
 	public void startGame(final GameType type) throws BlockCreateException, NoAnimationException {
 		gameType = type;
+		loser = WordisPlayer.NONE;
 		for (GameBoardManager boardManager : boardManagers.values()) {
 			boardManager.startGame();
 		}
@@ -112,11 +116,26 @@ public class GameManager implements ThreadListenerCallback {
 	 */
 	@Override
 	public synchronized void invokeMainProcess(final long elapsedMSec) {
-		// 1. update board positions including animation
-		for (GameBoardManager boardManager : boardManagers.values()) {
-			boardManager.updateBoardObjects(elapsedMSec);
+		// 1. Check game is over
+		if (loser == WordisPlayer.NONE) {
+			for (Entry<WordisPlayer, GameBoardManager> entry : boardManagers.entrySet()) {
+				if (entry.getValue().isGameOver()) {
+					// First member of hash map is judged if loser firstly
+					loser = entry.getKey();
+					entry.getValue().setLoser();
+					break;
+				}
+			}
 		}
-		// 2. draw view images
+		// 2. set game over or update board positions including animation
+		for (GameBoardManager boardManager : boardManagers.values()) {
+			if (loser == WordisPlayer.NONE) {
+				boardManager.updateBoardObjects(elapsedMSec);
+			} else {
+				boardManager.setGameOver();
+			}
+		}
+		// 3. draw view images
 		gsv.draw(boardManagers.values());
 	}
 	
@@ -129,12 +148,19 @@ public class GameManager implements ThreadListenerCallback {
 		case TEST:
 		case PRACTICE:
 		case SINGLE:
+		{
 			final CurrentGameStats stats = boardManagers.get(WordisPlayer.MY_PLAYER).getGameStats();
 			gameTerminate.terminateSingle(stats);
 			break;
+		}
 		case VS_CPU:
-			// TODO
+		{
+			final CurrentGameStats myStats = boardManagers.get(WordisPlayer.MY_PLAYER).getGameStats();
+			final CurrentGameStats cpuStats = boardManagers.get(WordisPlayer.COM).getGameStats();
+			// FIXME
+			gameTerminate.terminateVsCpu(myStats, cpuStats, /*exp*/0, /*point*/0);
 			break;
+		}
 		case MULTI_NET:
 			// TODO
 			break;

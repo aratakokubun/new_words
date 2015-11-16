@@ -5,6 +5,7 @@ import java.util.Set;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.util.SparseArray;
 
 import com.kkbnart.wordis.exception.BlockCreateException;
 import com.kkbnart.wordis.exception.InvalidParameterException;
@@ -15,6 +16,7 @@ import com.kkbnart.wordis.game.animation.BlockDeleteAnimation;
 import com.kkbnart.wordis.game.animation.FreeFallAnimation;
 import com.kkbnart.wordis.game.animation.GameAnimationFactory;
 import com.kkbnart.wordis.game.animation.GameAnimationType;
+import com.kkbnart.wordis.game.animation.GameOverAnimation;
 import com.kkbnart.wordis.game.layout.LayoutDefinition;
 import com.kkbnart.wordis.game.layout.ViewLayout;
 import com.kkbnart.wordis.game.object.block.Block;
@@ -153,7 +155,8 @@ public class GameBoardManager {
 				updateDeleteBlocks();
 				break;
 			case ANIMATION:
-				updateAnimation();
+				// FIXME
+				// Do noting
 				return;
 			default:
 				// Do nothing
@@ -166,8 +169,8 @@ public class GameBoardManager {
 	}
 	
 	public boolean checkIsNull() {
-		// TODO
-		return false;
+		return board == null || operated == null || next == null || 
+				animationManager == null || blockSetBuffer == null;
 	}
 	
 	/**
@@ -180,6 +183,15 @@ public class GameBoardManager {
 			// If contacted to walls or other blocks, stable the operated blocks and set next
 			board.addBlockSet(operated);
 			gameState = GameState.FALL;
+			
+			// XXX
+			final SparseArray<Block> blocks = board.getBlocks();
+			System.out.println(player.toString() + " dump");
+			for (int i = 0; i < blocks.size(); i++) {
+				System.out.println(blocks.keyAt(i));
+			}
+			System.out.println(player.toString() + " dump");
+			// XXX
 		} else {
 			// Automatically update block
 			operated.autoUpdate(elapsedMSec);
@@ -213,15 +225,9 @@ public class GameBoardManager {
 		final Set<Block> deletedBlocks = deleteBlocks();
 		
 		// If delete or fall occur, update animation
-		// Else, shift to "game over" or "release next"
+		// Else if not game over, "release next"
 		if (deletedBlocks.isEmpty()) {
-			if (isGameOver()) {
-				// TODO
-				// If versus remote player, send game over message to server
-				// If operated block is collided to walls or other blocks, game over!!
-				animationManager.addAnimation(GameAnimationType.GAME_OVER);
-				gameState = GameState.ANIMATION;
-			} else {
+			if (!isGameOver()) {
 				operated.setBlocks(next.releaseNextBlocks(player));
 				stats.endChain();
 				gameState = GameState.CONTROL;
@@ -267,12 +273,19 @@ public class GameBoardManager {
 	 * @return true:	game is over <br>
 	 * 		   false:	game is not over <br>	
 	 */
-	private boolean isGameOver() {
+	public boolean isGameOver() {
 		return board.getIsBoardStacked();
 	}
 	
-	private void updateAnimation() {
+	public void setGameOver() {
 		// TODO
+		// If versus remote player, send game over message to server
+		// If operated block is collided to walls or other blocks, game over!!
+		GameAnimationFactory factory = animationManager.getAnimationFactory();
+		GameOverAnimation animation = (GameOverAnimation)factory.create(GameAnimationType.GAME_OVER);
+		animation.setIsLoser(stats.getIsLoser());
+		animationManager.addAnimation(animation);
+		gameState = GameState.ANIMATION;
 	}
 
 	/**
@@ -296,8 +309,6 @@ public class GameBoardManager {
 		return gameState != GameState.FINISH;
 	}
 	
-	// TODO
-	// Check deep copy
 	public void suspendGame() {
 		temporaryStateWhilePause = gameState;
 		gameState = GameState.PAUSE;
@@ -309,6 +320,10 @@ public class GameBoardManager {
 	
 	public CurrentGameStats getGameStats() {
 		return stats;
+	}
+	
+	public void setLoser() {
+		stats.setIsLoser(true);
 	}
 	
 	/* ---------------------------------- */

@@ -1,6 +1,5 @@
 package com.kkbnart.wordis.game.manager;
 
-import com.kkbnart.wordis.game.player.PlayerStatus;
 
 /**
  * <p>
@@ -22,8 +21,11 @@ public interface IGameTerminate {
 	 * 
 	 * @param myStatus	Status of this player
 	 * @param cpuStatus	Status of CPU
+	 * @param exp
+	 * @param point
 	 */
-	public abstract void terminateVsCpu(final PlayerStatus myStatus, final PlayerStatus cpuStatus);
+	public abstract void terminateVsCpu(final CurrentGameStats myStatus, final CurrentGameStats cpuStatus,
+			final int exp, final int point);
 	
 	/**
 	 * Terminate game for multiple player game. <br>
@@ -31,5 +33,5 @@ public interface IGameTerminate {
 	 * @param myStatus	Status of this player
 	 * @param oppStatus	Status of opponent player
 	 */
-	public abstract void terminateVsPlayer(final PlayerStatus myStatus, final PlayerStatus oppStatus);
+	public abstract void terminateVsPlayer(final CurrentGameStats myStatus, final CurrentGameStats oppStatus);
 }

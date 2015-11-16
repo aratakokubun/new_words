@@ -30,9 +30,13 @@ public class GameOverAnimation extends GameAnimation {
 	
 	// Game over text position
 	private TextPositionRate textPosition = new TextPositionRate(0.5f, 0.4f, 80.f);
+	
+	private boolean isLoser = false;
 	// TODO
 	// Declare in xml
-	private String gameOverText = "LOSE";
+	private String loseText = "LOSE";
+	private String winText = "WIN";
+	private String gameOverText;
 	private AnimationTime textTime;
 
 	public GameOverAnimation(final long animationTime, final GameState postAction, final int col) {
@@ -45,6 +49,11 @@ public class GameOverAnimation extends GameAnimation {
 	public void setAnimationParameters(final int col) {
 		collapseSpeed = new float[col];
 		setAnimationSpeed();
+	}
+	
+	public void setIsLoser(final boolean isLoser) {
+		this.isLoser = isLoser;
+		gameOverText = isLoser ? loseText : winText;
 	}
 	
 	/**
@@ -66,10 +75,6 @@ public class GameOverAnimation extends GameAnimation {
 		}
 	}
 	
-	public void setGameOverText(final String gameOverText) {
-		this.gameOverText = gameOverText;
-	}
-	
 	@Override
 	protected void setAnimationStart(final long now) {
 		super.setAnimationStart(now);
@@ -80,9 +85,16 @@ public class GameOverAnimation extends GameAnimation {
 	public void drawAnimation(final Canvas canvas, final Board board, final NextBlocks nextBlocks, 
 			final long elapsedTime, final long diffTime) {
 		final Paint paint =  new Paint();
-		// Collapse block
-		if (collapseTime.start < elapsedTime && elapsedTime < collapseTime.end) {
-			drawCollapseBlock(canvas, paint, board, diffTime);
+		// Collapsing block animation if loser
+		// Else draw stabled blocks
+		if (isLoser) {
+			if (collapseTime.start < elapsedTime && elapsedTime < collapseTime.end) {
+					drawCollapseBlock(canvas, paint, board, diffTime);
+			}
+		} else {
+			board.draw(canvas, paint);
+			// FIXME
+			// add operated blocks
 		}
 		// Draw next blocks
 		nextBlocks.draw(canvas, paint, board);

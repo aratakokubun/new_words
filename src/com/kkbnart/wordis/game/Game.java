@@ -31,12 +31,12 @@ import com.kkbnart.wordis.exception.NoAnimationException;
 import com.kkbnart.wordis.game.dialog.DialogDismissableOnClickListener;
 import com.kkbnart.wordis.game.dialog.GameMenuDialog;
 import com.kkbnart.wordis.game.dialog.SingleGameFinishDialog;
+import com.kkbnart.wordis.game.dialog.VsCpuFinishDialog;
 import com.kkbnart.wordis.game.layout.ViewLayout;
 import com.kkbnart.wordis.game.manager.CurrentGameStats;
 import com.kkbnart.wordis.game.manager.GameManager;
 import com.kkbnart.wordis.game.manager.IGameTerminate;
 import com.kkbnart.wordis.game.object.block.BlockSetFactory;
-import com.kkbnart.wordis.game.player.PlayerStatus;
 import com.kkbnart.wordis.game.player.WordisPlayer;
 import com.kkbnart.wordis.game.rule.MoveAmount;
 import com.kkbnart.wordis.game.rule.ScoreCalculator;
@@ -256,6 +256,14 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 		}
 	};
 	
+	private DialogDismissableOnClickListener nextClieckListener = new DialogDismissableOnClickListener() {
+		@Override
+		public void onClick(View v) {
+			// TODO
+			// Go to next game or next level
+		}
+	};
+	
 	private OnCancelListener dialogCancelListener = new OnCancelListener() {
 		@Override
 		public void onCancel(DialogInterface dialog) {
@@ -264,19 +272,23 @@ public class Game extends Activity implements IGameActivity, IGameTerminate {
 	};
 
 	@Override
-	public void terminateSingle(CurrentGameStats currentGameStats) {
+	public void terminateSingle(final CurrentGameStats currentGameStats) {
 		Dialog dialog = new SingleGameFinishDialog(this, retryClickListener,
 				exitClickListener, currentGameStats.getScore(), currentGameStats.getMaxChain());
 		dialog.show();
 	}
 
 	@Override
-	public void terminateVsCpu(PlayerStatus myStatus, PlayerStatus cpuStatus) {
-		// TODO Auto-generated method stub
+	public void terminateVsCpu(final CurrentGameStats myStats, final CurrentGameStats cpuStats,
+			final int exp, final int point) {
+		Dialog dialog = new VsCpuFinishDialog(this, retryClickListener,
+				exitClickListener, nextClieckListener, myStats.getScore(), cpuStats.getMaxChain(),
+				exp, point, myStats.getIsLoser());
+		dialog.show();
 	}
 
 	@Override
-	public void terminateVsPlayer(PlayerStatus myStatus, PlayerStatus oppStatus) {
+	public void terminateVsPlayer(CurrentGameStats myStatus, CurrentGameStats oppStatus) {
 		// TODO Auto-generated method stub
 	}
 }

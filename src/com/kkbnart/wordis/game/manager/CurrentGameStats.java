@@ -7,6 +7,7 @@ public class CurrentGameStats {
 	private int maxChain;
 	private int chain;
 	private int deletedBlocks;
+	private boolean isLoser;
 	
 	public CurrentGameStats() {
 		clearStats();
@@ -17,6 +18,7 @@ public class CurrentGameStats {
 		this.maxChain = 0;
 		this.chain = 0;
 		this.deletedBlocks = 0;
+		this.isLoser = false;
 	}
 	
 	public int getScore() {
@@ -29,6 +31,14 @@ public class CurrentGameStats {
 	
 	public int getMaxChain() {
 		return maxChain;
+	}
+	
+	public boolean getIsLoser() {
+		return isLoser;
+	}
+	
+	public void setIsLoser(final boolean isLoser) {
+		this.isLoser = isLoser;
 	}
 	
 	public void updateMaxChain() {
